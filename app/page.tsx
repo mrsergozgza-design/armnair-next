@@ -27,9 +27,9 @@ export default function Home() {
   const [page, setPage]         = useState<'home' | 'analytics' | 'catalog'>('home')
 
   useEffect(() => {
-    fetch('/data.json')
+    fetch('/api/properties')
       .then(r => r.ok ? r.json() : null)
-      .then(j => setData(j?.complexes ?? j ?? FALLBACK))
+      .then(j => setData(j?.complexes ?? FALLBACK))
       .catch(() => setData(FALLBACK))
   }, [])
 
