@@ -216,6 +216,47 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
               ))}
             </div>
 
+            {/* Extended characteristics */}
+            {(c.unit_type || c.min_area || c.payment_plan || c.subway_station || c.infrastructure || c.commission || c.contact || c.website) && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 8, textTransform: 'uppercase' }}>Характеристики</h4>
+                {[
+                  c.unit_type      && { label: 'Тип объекта',   value: c.unit_type },
+                  c.min_area       && { label: 'Мин. площадь',  value: `${c.min_area} м²` },
+                  c.payment_plan   && { label: 'Payment Plan',  value: c.payment_plan },
+                  c.subway_station && { label: 'Метро',         value: c.subway_station },
+                  c.infrastructure && { label: 'Инфраструктура',value: c.infrastructure },
+                  c.commission     && { label: 'Комиссия',      value: `${c.commission}%` },
+                  c.contact        && { label: 'Контакт',       value: c.contact },
+                ].filter(Boolean).map((row, i) => {
+                  const r = row as { label: string; value: string }
+                  return (
+                    <div key={i} style={{
+                      display: 'flex', justifyContent: 'space-between',
+                      borderBottom: '1px solid rgba(139,105,20,0.08)',
+                      padding: '0.45rem 0',
+                    }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.06em' }}>{r.label}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', maxWidth: '60%', textAlign: 'right', wordBreak: 'break-word' }}>{r.value}</span>
+                    </div>
+                  )
+                })}
+                {c.website && (
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between',
+                    borderBottom: '1px solid rgba(139,105,20,0.08)',
+                    padding: '0.45rem 0',
+                  }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.06em' }}>Сайт</span>
+                    <a href={c.website} target="_blank" rel="noopener noreferrer"
+                      style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--gold)', textDecoration: 'none', maxWidth: '60%', textAlign: 'right', wordBreak: 'break-word' }}>
+                      {c.website.replace(/^https?:\/\//, '')}
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Tax calculator */}
             <div style={{ background: 'rgba(160,120,32,0.05)', border: '1px solid rgba(160,120,32,0.12)', borderRadius: 4, padding: '1rem' }}>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#A07820', letterSpacing: '0.12em', marginBottom: 12, textTransform: 'uppercase' }}>

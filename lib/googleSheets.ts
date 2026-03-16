@@ -1,92 +1,98 @@
 import Papa from 'papaparse'
-import type { Complex, PricePoint } from './types'
+import type { Complex } from './types'
 
-/**
- * Ожидаемые заголовки колонок в CSV (первая строка):
- *
- * id | name | developer | district | price_amd | price_usd | status |
- * tax_refund | yield | last_updated | lat | lng | presentation |
- * description | image | history
- *
- * history — JSON-строка: [{"month":"Jan","price":1200000}, ...]
- *           или формат:   Jan:1200000,Feb:1280000
- * tax_refund — TRUE / FALSE (или true/false, да/нет)
- */
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/1scuCyAhUuHGh_XQVDbUWQEgdrP5lI1gzMUS4A9Uy8aE/export?format=csv&gid=0'
 
-function parseBoolean(val: string | undefined): boolean {
-  if (!val) return false
-  const v = val.trim().toLowerCase()
-  return v === 'true' || v === '1' || v === 'да' || v === 'yes'
+function slugify(s: string): string {
+  return s.toLowerCase()
+    .replace(/[^a-zа-яёa-z0-9\s-]/gi, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 80)
 }
 
-function parseHistory(val: string | undefined): PricePoint[] {
-  if (!val) return []
-  try {
-    const parsed = JSON.parse(val)
-    if (Array.isArray(parsed)) return parsed as PricePoint[]
-  } catch {
-    // не JSON — пробуем формат "Jan:1200000,Feb:1280000"
-    return val.split(',').map(seg => {
-      const [month, price] = seg.split(':')
-      return { month: month?.trim() ?? '', price: Number(price) || 0 }
-    }).filter(p => p.month)
-  }
-  return []
+function parseNum(val: string | undefined): number {
+  if (!val) return 0
+  return Number(val.replace(/[\s,]/g, '')) || 0
 }
 
-function rowToComplex(row: Record<string, string>): Complex | null {
-  const id   = row['id']?.trim()
-  const name = row['name']?.trim()
-  if (!id || !name) return null   // пустая строка — пропускаем
+function today(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function rowToComplex(row: Record<string, string>, index: number): Complex | null {
+  const developer = row['developer']?.trim()
+  const location  = row['location']?.trim()
+  if (!developer && !location) return null
+
+  const priceAmd  = parseNum(row['min_price_amd'])
+  const priceUsd  = Math.round(priceAmd / 390)
+  const unitType  = row['unit_type']?.trim() || undefined
+  const payPlan   = row['payment_plan']?.trim() || undefined
+  const website   = row['сайт,_ссылка']?.trim() || row['website']?.trim() || undefined
+
+  const name = unitType
+    ? `${developer} — ${unitType}`
+    : developer ?? 'Unnamed'
+
+  // Slight coordinate offset so markers don't stack exactly
+  const latOffset = (index % 7 - 3) * 0.003
+  const lngOffset = (Math.floor(index / 7) % 5 - 2) * 0.003
 
   return {
-    id,
+    id:           slugify(`${developer ?? ''}-${location ?? ''}-${unitType ?? ''}-${index}`),
     name,
-    developer:    row['developer']?.trim()    ?? '',
-    district:     row['district']?.trim()     ?? '',
-    price_amd:    Number(row['price_amd'])    || 0,
-    price_usd:    Number(row['price_usd'])    || 0,
-    status:       row['status']?.trim()       ?? '',
-    tax_refund:   parseBoolean(row['tax_refund']),
-    yield:        row['yield']?.trim()        ?? '0%',
-    last_updated: row['last_updated']?.trim() ?? '',
-    lat:          Number(row['lat'])          || 0,
-    lng:          Number(row['lng'])          || 0,
-    presentation: row['presentation']?.trim() || undefined,
-    description:  row['description']?.trim()  ?? '',
-    image:        row['image']?.trim()        || undefined,
-    history:      parseHistory(row['history']),
+    developer:    developer ?? '',
+    district:     location  ?? '',
+    price_amd:    priceAmd,
+    price_usd:    priceUsd,
+    status:       'Available',
+    tax_refund:   false,
+    yield:        payPlan ?? '—',
+    last_updated: today(),
+    lat:          40.1872 + latOffset,
+    lng:          44.515  + lngOffset,
+    history:      [],
+    description:  row['преимущества']?.trim() ?? '',
+    presentation: website,
+    website,
+    unit_type:    unitType,
+    min_area:     row['min_total_area,_м2']?.trim() || undefined,
+    payment_plan: payPlan,
+    subway_station: row['subway_stancion']?.trim() || undefined,
+    infrastructure: row['school/kindergarten/mall/university']?.trim() || undefined,
+    commission:   row['commission,_%']?.trim() || undefined,
+    contact:      row['контактное_лицо_(почта,_тел)']?.trim() || undefined,
   }
 }
 
 export async function fetchComplexesFromSheets(): Promise<Complex[]> {
-  const csvUrl = process.env.GOOGLE_SHEET_CSV_URL
+  const csvUrl = process.env.GOOGLE_SHEET_CSV_URL ?? CSV_URL
 
-  if (!csvUrl) {
-    throw new Error('Отсутствует переменная окружения: GOOGLE_SHEET_CSV_URL')
-  }
-
-  const response = await fetch(csvUrl, {
-    next: { revalidate: 300 },   // Next.js кэш — не дёргаем Google каждый запрос
-  })
-
+  const response = await fetch(csvUrl, { next: { revalidate: 60 } })
   if (!response.ok) {
-    throw new Error(`Не удалось загрузить CSV: ${response.status} ${response.statusText}`)
+    throw new Error(`CSV fetch failed: ${response.status} ${response.statusText}`)
   }
 
   const csvText = await response.text()
 
   const { data, errors } = Papa.parse<Record<string, string>>(csvText, {
-    header: true,          // первая строка — заголовки
+    header: true,
     skipEmptyLines: true,
-    transformHeader: h => h.trim().toLowerCase().replace(/\s+/g, '_'),
+    // Normalise header: lowercase, spaces/commas/brackets → underscores
+    transformHeader: h => h.trim()
+      .toLowerCase()
+      .replace(/[\s,()]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, ''),
   })
 
   if (errors.length) {
-    console.warn('[googleSheets] Предупреждения при парсинге CSV:', errors.slice(0, 3))
+    console.warn('[googleSheets] CSV parse warnings:', errors.slice(0, 3))
   }
 
   return data
-    .map(rowToComplex)
+    .map((row, i) => rowToComplex(row, i))
     .filter((c): c is Complex => c !== null)
 }

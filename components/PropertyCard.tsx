@@ -74,7 +74,7 @@ function PropertyCard({ complex: c, onClick, onHover }: Props) {
             fontFamily:'var(--font-mono)', fontSize:'0.58rem', color:'var(--teal)',
             background:'rgba(42,157,143,0.08)', border:'1px solid rgba(42,157,143,0.22)',
             borderRadius:2, padding:'1px 6px',
-          }}>{c.yield}</span>
+          }}>{c.payment_plan ?? c.yield}</span>
         </div>
 
         <h3 style={{ fontFamily:'var(--font-serif)', fontSize:'1.35rem', fontWeight:400, color:'var(--t1)', margin:'0 0 0.55rem 0', lineHeight:1.1 }}>
@@ -98,9 +98,9 @@ function PropertyCard({ complex: c, onClick, onHover }: Props) {
           margin:'0 -0.8rem 0.6rem -0.8rem', padding:'0.35rem 0.8rem',
         }}>
           {[
-            { label:'Доходность', value:c.yield },
-            { label:'Рост', value:growth > 0 ? `+${growth.toFixed(1)}%` : `${growth.toFixed(1)}%` },
-            { label:'Район', value:c.district.split('-')[0] },
+            { label: c.unit_type ? 'Тип' : 'Доходность', value: c.unit_type ?? c.yield },
+            { label: c.min_area ? 'Площадь' : 'Рост', value: c.min_area ? `от ${c.min_area}м²` : (growth > 0 ? `+${growth.toFixed(1)}%` : `${growth.toFixed(1)}%`) },
+            { label: 'Район', value: c.district.split('-')[0] },
           ].map((m, i) => (
             <div key={i} style={{ flex:1, textAlign: i===1 ? 'center' : i===2 ? 'right' : 'left' }}>
               <div style={{ fontFamily:'var(--font-mono)', fontSize:'0.54rem', color:'var(--tm)', letterSpacing:'0.06em', marginBottom:1 }}>{m.label}</div>

@@ -2,21 +2,18 @@ import { NextResponse } from 'next/server'
 import { fetchComplexesFromSheets } from '@/lib/googleSheets'
 import { FALLBACK } from '@/lib/data'
 
-// Кэшируем ответ на 5 минут — не долбим Google Sheets на каждый запрос
-export const revalidate = 300
+export const revalidate = 60
 
 export async function GET() {
   try {
     const complexes = await fetchComplexesFromSheets()
-    return NextResponse.json({ complexes }, {
-      headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=60' },
-    })
+    if (complexes.length === 0) {
+      console.warn('[/api/properties] Таблица пустая — используем FALLBACK')
+      return NextResponse.json({ complexes: FALLBACK, source: 'fallback-empty' })
+    }
+    return NextResponse.json({ complexes })
   } catch (err) {
-    // Если Google Sheets недоступны — отдаём FALLBACK данные
-    console.error('[/api/properties] Ошибка получения данных из Google Sheets:', err)
-    return NextResponse.json(
-      { complexes: FALLBACK, source: 'fallback' },
-      { status: 200 }               // 200, чтобы фронт не ломался
-    )
+    console.error('[/api/properties] Ошибка:', err)
+    return NextResponse.json({ complexes: FALLBACK, source: 'fallback-error' })
   }
 }
