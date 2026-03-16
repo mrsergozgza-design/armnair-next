@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+  --color-void: #09090F;
+  --color-surface: #111118;
+  --color-card: #16161F;
+  --color-gold: #A07820;
+  --color-gold-bright: #C9A96E;
+  --color-gold-dim: #7A5C10;
+  --color-teal: #2A9D8F;
+  --color-rose: #E76F51;
+  --color-text-1: #F0EDE8;
+  --color-text-2: #CCCCCC;
+  --color-text-3: #9A9A9A;
+  --color-text-muted: #555560;
+  --color-border: rgba(139,105,20,0.18);
+  --color-border-glow: rgba(139,105,20,0.45);
+
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-sans: 'Outfit', sans-serif;
+}
+
+:root {
+  --gold: #A07820; --gold-bright: #C9A96E; --gold-dim: #7A5C10;
+  --teal: #2A9D8F; --rose: #E76F51;
+}
+
+* { box-sizing: border-box; }
+html, body { background: #09090F; color: #F0EDE8; font-family: 'Outfit','sans-serif'; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: #09090F; }
+::-webkit-scrollbar-thumb { background: #A07820; border-radius: 2px; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pulseDot { 0%,100%{box-shadow:0 0 4px #A07820} 50%{box-shadow:0 0 14px #C9A96E,0 0 28px rgba(201,169,110,.25)} }
+@keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+@keyframes grain { 0%,100%{transform:translate(0,0)} 10%{transform:translate(-2%,-3%)} 30%{transform:translate(3%,1%)} 50%{transform:translate(-1%,2%)} 70%{transform:translate(2%,-1%)} 90%{transform:translate(-3%,2%)} }
+
+.shimmer-text {
+  background: linear-gradient(90deg, #7A5C10 0%, #C9A96E 50%, #7A5C10 100%);
+  background-size: 200% auto;
+  animation: shimmer 4s linear infinite;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 1px 8px rgba(0,0,0,.4));
+}
+
+.hero-grain::after {
+  content:''; position:absolute; inset:-100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  animation: grain 8s steps(10) infinite;
+  pointer-events: none; opacity: .35;
+}
+
+.hero-grid {
+  position:absolute; inset:0;
+  background-image: linear-gradient(rgba(160,120,32,.06) 1px,transparent 1px), linear-gradient(90deg,rgba(160,120,32,.06) 1px,transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse at 50% 30%, black 0%, transparent 65%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 30%, black 0%, transparent 65%);
+}
+
+/* Leaflet dark overrides */
+.leaflet-container { background: #0D0D14 !important; }
+.leaflet-tile { filter: brightness(.25) saturate(.4) hue-rotate(200deg) !important; }
+.leaflet-control-zoom a { background: #16161F !important; color: #C9A96E !important; border-color: rgba(160,120,32,.3) !important; }
+.leaflet-control-attribution { background: rgba(9,9,15,.85) !important; color: #555560 !important; font-size:.5rem !important; }
+.leaflet-popup-content-wrapper { background: #16161F; border: 1px solid rgba(160,120,32,.25); border-radius: 0; box-shadow: 0 8px 40px rgba(0,0,0,.6); padding:0; }
+.leaflet-popup-content { margin:0; padding:0; }
+.leaflet-popup-tip-container { display:none; }
+.leaflet-popup-close-button { color: #C9A96E !important; }
+
+/* Modal scroll lock */
+body.modal-open { overflow: hidden; }
+
+/* Pill selects */
+.pill-sel {
+  border-radius: 100px !important;
+  padding: .36rem 1.8rem .36rem .75rem !important;
+  border: 1px solid rgba(160,120,32,.22) !important;
+  background-color: #16161F !important;
+  color: #CCCCCC;
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  letter-spacing: .06em;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .2s;
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23C9A96E' stroke-width='1.2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right .6rem center !important;
+}
+.pill-sel:hover, .pill-sel:focus { border-color: #A07820 !important; }
+.pill-sel option { background: #16161F; color: #CCCCCC; }
