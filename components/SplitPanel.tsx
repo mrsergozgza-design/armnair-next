@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Complex } from '@/lib/types'
 import PropertyCard from './PropertyCard'
@@ -27,6 +28,7 @@ interface Props {
 
 export default function SplitPanel({ id, complexes, onCardClick }: Props) {
   const { theme } = useTheme()
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
 
   return (
     <div id={id} style={{ display:'flex', alignItems:'flex-start' }}>
@@ -48,7 +50,7 @@ export default function SplitPanel({ id, complexes, onCardClick }: Props) {
         ) : (
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
             {complexes.map(c => (
-              <PropertyCard key={c.id} complex={c} onClick={() => onCardClick(c.id)} />
+              <PropertyCard key={c.id} complex={c} onClick={() => onCardClick(c.id)} onHover={setHoveredId} />
             ))}
           </div>
         )}
@@ -60,7 +62,7 @@ export default function SplitPanel({ id, complexes, onCardClick }: Props) {
         position:'sticky', top:64,
         height:'calc(100vh - 64px)',
       }}>
-        <MapPanel complexes={complexes} onMarkerClick={onCardClick} theme={theme} />
+        <MapPanel complexes={complexes} onMarkerClick={onCardClick} theme={theme} hoveredId={hoveredId} />
       </div>
     </div>
   )

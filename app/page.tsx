@@ -10,6 +10,7 @@ import SplitPanel from '@/components/SplitPanel'
 import PropertyModal from '@/components/PropertyModal'
 import ConsultModal from '@/components/ConsultModal'
 import AnalyticsPage from '@/components/analytics/AnalyticsPage'
+import CatalogPage from '@/components/CatalogPage'
 
 interface Filters {
   district: string; developer: string; price: number
@@ -23,7 +24,7 @@ export default function Home() {
   const [filters, setFilters]   = useState<Filters>(DEFAULT_FILTERS)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [consultOpen, setConsultOpen] = useState(false)
-  const [page, setPage]         = useState<'home' | 'analytics'>('home')
+  const [page, setPage]         = useState<'home' | 'analytics' | 'catalog'>('home')
 
   useEffect(() => {
     fetch('/data.json')
@@ -32,7 +33,6 @@ export default function Home() {
       .catch(() => setData(FALLBACK))
   }, [])
 
-  // useMemo avoids extra render cycle compared to useEffect+setState
   const filtered = useMemo(() => data.filter(c => {
     if (filters.district  && c.district  !== filters.district)  return false
     if (filters.developer && c.developer !== filters.developer) return false
@@ -52,7 +52,7 @@ export default function Home() {
     [selectedId, data]
   )
 
-  const handleNav = (p: 'home' | 'analytics', anchor?: string) => {
+  const handleNav = (p: 'home' | 'analytics' | 'catalog', anchor?: string) => {
     setPage(p)
     if (anchor) setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ behavior:'smooth', block:'start' }), 60)
   }
@@ -63,6 +63,8 @@ export default function Home() {
 
       {page === 'analytics'
         ? <AnalyticsPage data={data} onOpenModal={setSelectedId} onBack={() => setPage('home')} />
+        : page === 'catalog'
+        ? <CatalogPage data={data} onOpenModal={setSelectedId} onBack={() => setPage('home')} />
         : <>
             <Hero />
             <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />

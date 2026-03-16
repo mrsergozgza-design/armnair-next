@@ -7,8 +7,7 @@
 }
 
 /* ── Light theme (default) ─────────────────────────────────── */
-:root,
-html[data-theme="light"] {
+:root {
   --bg:         #FAF9F6;
   --surface:    #FFFFFF;
   --card:       #FFFFFF;
@@ -30,7 +29,7 @@ html[data-theme="light"] {
 }
 
 /* ── Dark theme ─────────────────────────────────────────────── */
-html[data-theme="dark"] {
+html.dark {
   --bg:         #09090F;
   --surface:    #111118;
   --card:       #16161F;
@@ -150,8 +149,8 @@ body.modal-open { overflow: hidden; }
 
 /* ── Leaflet ────────────────────────────────────────────────── */
 .leaflet-container { background: var(--bg) !important; }
-html[data-theme="dark"] .leaflet-tile { filter: brightness(.3) saturate(.4) hue-rotate(200deg) !important; }
-html[data-theme="light"] .leaflet-tile { filter: saturate(.75) brightness(1.02) !important; }
+html.dark .leaflet-tile { filter: brightness(.9) saturate(.8) !important; }
+html:not(.dark) .leaflet-tile { filter: saturate(.8) brightness(1.0) !important; }
 .leaflet-control-zoom a {
   background: var(--card) !important;
   color: var(--gold-b) !important;

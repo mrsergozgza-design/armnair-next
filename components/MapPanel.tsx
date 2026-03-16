@@ -1,6 +1,6 @@
 'use client'
 import 'leaflet/dist/leaflet.css'
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { Complex } from '@/lib/types'
@@ -26,6 +26,18 @@ const GOLD_ICON = L.divIcon({
   iconSize: [28, 36], iconAnchor: [14, 36], popupAnchor: [0, -40],
 })
 
+const GOLD_ICON_ACTIVE = L.divIcon({
+  html: `<svg width="38" height="48" viewBox="0 0 38 48" fill="none">
+    <circle cx="19" cy="19" r="19" fill="#A07820" opacity="0.18"/>
+    <path d="M19 4C10.163 4 3 11.163 3 20C3 32.5 19 44 19 44C19 44 35 32.5 35 20C35 11.163 27.837 4 19 4Z"
+          fill="#A07820" opacity="1"/>
+    <circle cx="19" cy="20" r="7" fill="#C9A96E"/>
+    <circle cx="19" cy="20" r="3.5" fill="white" opacity="0.95"/>
+  </svg>`,
+  className: '',
+  iconSize: [38, 48], iconAnchor: [19, 48], popupAnchor: [0, -52],
+})
+
 function FitBounds({ complexes }: { complexes: Complex[] }) {
   const map = useMap()
   useEffect(() => {
@@ -41,9 +53,10 @@ interface Props {
   complexes: Complex[]
   onMarkerClick: (id: string) => void
   theme?: 'light' | 'dark'
+  hoveredId?: string | null
 }
 
-export default function MapPanel({ complexes, onMarkerClick, theme = 'light' }: Props) {
+export default function MapPanel({ complexes, onMarkerClick, theme = 'light', hoveredId }: Props) {
   const tileUrl = theme === 'dark'
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
     : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
@@ -60,9 +73,18 @@ export default function MapPanel({ complexes, onMarkerClick, theme = 'light' }: 
       <FitBounds complexes={complexes} />
       {complexes.map(c => {
         const ss = statusStyle(c.status)
+        const isHovered = c.id === hoveredId
         return (
-          <Marker key={c.id} position={[c.lat, c.lng]} icon={GOLD_ICON}
-            eventHandlers={{ click: () => onMarkerClick(c.id) }}
+          <Marker
+            key={c.id}
+            position={[c.lat, c.lng]}
+            icon={isHovered ? GOLD_ICON_ACTIVE : GOLD_ICON}
+            zIndexOffset={isHovered ? 1000 : 0}
+            eventHandlers={{
+              mouseover: (e) => e.target.openPopup(),
+              mouseout: (e) => e.target.closePopup(),
+              click: () => onMarkerClick(c.id),
+            }}
           >
             <Popup>
               <div style={{ width:220, overflow:'hidden', background:'var(--popup-bg)', color:'var(--t1)' }}>

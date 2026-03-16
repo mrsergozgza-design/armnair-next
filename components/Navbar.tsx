@@ -4,8 +4,8 @@ import { Search, Phone, MessageCircle, Send, Sun, Moon } from 'lucide-react'
 import { useTheme } from './ThemeProvider'
 
 interface NavbarProps {
-  activePage: 'home' | 'analytics'
-  onNav: (page: 'home' | 'analytics', anchor?: string) => void
+  activePage: 'home' | 'analytics' | 'catalog'
+  onNav: (page: 'home' | 'analytics' | 'catalog', anchor?: string) => void
 }
 
 export default function Navbar({ activePage, onNav }: NavbarProps) {
@@ -23,9 +23,9 @@ export default function Navbar({ activePage, onNav }: NavbarProps) {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  const navLinks: { label: string; page: 'home' | 'analytics'; anchor?: string }[] = [
-    { label: 'КАРТА',      page: 'home',      anchor: 'split-panel' },
-    { label: 'КАТАЛОГ',    page: 'home',      anchor: 'split-panel' },
+  const navLinks: { label: string; page: 'home' | 'analytics' | 'catalog'; anchor?: string }[] = [
+    { label: 'ГЛАВНАЯ',    page: 'home' },
+    { label: 'КАТАЛОГ',    page: 'catalog' },
     { label: 'АНАЛИТИКА',  page: 'analytics' },
   ]
 
@@ -63,10 +63,7 @@ export default function Navbar({ activePage, onNav }: NavbarProps) {
       {/* Center nav */}
       <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
         {navLinks.map(link => {
-          const isActive = activePage === link.page && (link.page === 'analytics' || link.page === 'home')
-          const isAnalyticsActive = link.page === 'analytics' && activePage === 'analytics'
-          const isHomeActive = link.page === 'home' && activePage === 'home'
-          const active = isAnalyticsActive || isHomeActive
+          const active = activePage === link.page
           return (
             <button
               key={link.label}

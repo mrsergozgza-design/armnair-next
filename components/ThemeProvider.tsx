@@ -13,14 +13,14 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     const saved = (localStorage.getItem('armnair-theme') as Theme) ?? 'light'
     setTheme(saved)
-    document.documentElement.setAttribute('data-theme', saved)
+    document.documentElement.classList.toggle('dark', saved === 'dark')
   }, [])
 
   const toggle = () => {
     setTheme(t => {
       const next: Theme = t === 'light' ? 'dark' : 'light'
       localStorage.setItem('armnair-theme', next)
-      document.documentElement.setAttribute('data-theme', next)
+      document.documentElement.classList.toggle('dark', next === 'dark')
       return next
     })
   }

@@ -4,9 +4,9 @@ import { Complex } from '@/lib/types'
 import { fmtAmd, statusStyle, freshLabel, priceGrowth } from '@/lib/utils'
 import { ArrowRight } from 'lucide-react'
 
-interface Props { complex: Complex; onClick: () => void }
+interface Props { complex: Complex; onClick: () => void; onHover?: (id: string | null) => void }
 
-function PropertyCard({ complex: c, onClick }: Props) {
+function PropertyCard({ complex: c, onClick, onHover }: Props) {
   const ss = statusStyle(c.status)
   const fresh = freshLabel(c.last_updated)
   const growth = priceGrowth(c.history)
@@ -24,11 +24,13 @@ function PropertyCard({ complex: c, onClick }: Props) {
         e.currentTarget.style.borderColor = 'rgba(160,120,32,0.4)'
         e.currentTarget.style.transform = 'translateY(-4px)'
         e.currentTarget.style.boxShadow = 'var(--card-shadow-hover)'
+        onHover?.(c.id)
       }}
       onMouseLeave={e => {
         e.currentTarget.style.borderColor = 'var(--border-c)'
         e.currentTarget.style.transform = 'translateY(0)'
         e.currentTarget.style.boxShadow = 'var(--card-shadow)'
+        onHover?.(null)
       }}
     >
       {/* Image */}
