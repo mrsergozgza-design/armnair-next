@@ -65,7 +65,7 @@ export default function ConsultModal({ open, onClose }: ConsultModalProps) {
     >
       <div style={{
         maxWidth: 380, width: '100%',
-        background: '#111118',
+        background: 'var(--surface)',
         border: '1px solid rgba(139,105,20,0.25)',
         boxShadow: '0 24px 80px rgba(0,0,0,0.8)',
         borderRadius: 4,
@@ -83,20 +83,20 @@ export default function ConsultModal({ open, onClose }: ConsultModalProps) {
             style={{
               position: 'absolute', top: 14, right: 14,
               background: 'none', border: 'none', cursor: 'pointer',
-              color: '#9A9A9A',
+              color: 'var(--t3)',
             }}
           >
             <X size={16} />
           </button>
           <h3 style={{
             fontFamily: 'var(--font-serif)', fontSize: '1.7rem', fontWeight: 400,
-            color: '#F0EDE8', margin: '0 0 4px 0',
+            color: 'var(--t1)', margin: '0 0 4px 0',
           }}>
             Связаться с нами
           </h3>
           <p style={{
             fontFamily: 'var(--font-mono)', fontSize: '0.6rem',
-            color: '#555560', letterSpacing: '0.1em', margin: 0,
+            color: 'var(--tm)', letterSpacing: '0.1em', margin: 0,
           }}>
             ArmNair · Ереван · Армения
           </p>
@@ -131,7 +131,7 @@ export default function ConsultModal({ open, onClose }: ConsultModalProps) {
             >
               <div style={{ flexShrink: 0 }}>{c.icon}</div>
               <div>
-                <div style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: '#F0EDE8', fontWeight: 400 }}>{c.label}</div>
+                <div style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: 'var(--t1)', fontWeight: 400 }}>{c.label}</div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: c.color, marginTop: 2 }}>{c.value}</div>
               </div>
             </a>
@@ -144,7 +144,7 @@ export default function ConsultModal({ open, onClose }: ConsultModalProps) {
           padding: '0.75rem 1.5rem',
           textAlign: 'center',
           fontFamily: 'var(--font-mono)', fontSize: '0.62rem',
-          color: '#555560', letterSpacing: '0.06em',
+          color: 'var(--tm)', letterSpacing: '0.06em',
         }}>
           Ответим в течение 15 минут · Пн–Вс 9:00–21:00
         </div>

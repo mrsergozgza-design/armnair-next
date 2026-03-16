@@ -1,10 +1,18 @@
 import type { Metadata } from 'next'
 import { Cormorant_Garamond, DM_Mono, Outfit } from 'next/font/google'
+import ThemeProvider from '@/components/ThemeProvider'
 import './globals.css'
 
-const cormorant = Cormorant_Garamond({ subsets:['latin'], weight:['300','400','500','600'], style:['normal','italic'], variable:'--font-serif' })
-const dmMono    = DM_Mono({ subsets:['latin'], weight:['300','400','500'], variable:'--font-mono' })
-const outfit    = Outfit({ subsets:['latin'], weight:['200','300','400','500'], variable:'--font-sans' })
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'], weight: ['300','400','500','600'],
+  style: ['normal','italic'], variable: '--font-serif',
+})
+const dmMono = DM_Mono({
+  subsets: ['latin'], weight: ['300','400','500'], variable: '--font-mono',
+})
+const outfit = Outfit({
+  subsets: ['latin'], weight: ['200','300','400','500'], variable: '--font-sans',
+})
 
 export const metadata: Metadata = {
   title: 'ArmNair — Недвижимость Еревана',
@@ -13,9 +21,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru">
+    <html lang="ru" data-theme="light">
+      <head>
+        {/* Prevent flash of wrong theme */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            var t = localStorage.getItem('armnair-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+          })()
+        `}} />
+      </head>
       <body className={`${cormorant.variable} ${dmMono.variable} ${outfit.variable}`}>
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

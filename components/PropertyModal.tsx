@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import { X, Download, ArrowRight, TrendingUp, Phone, MessageCircle } from 'lucide-react'
 import { Complex } from '@/lib/types'
 import { fmtAmd, fmtDate, statusStyle, parseYield, priceGrowth } from '@/lib/utils'
+import { useTheme } from './ThemeProvider'
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip
@@ -22,6 +23,7 @@ interface PropertyModalProps {
 }
 
 export default function PropertyModal({ complex: c, onClose, onOpenContact, onOpenMap }: PropertyModalProps) {
+  const { theme } = useTheme()
   const [area, setArea] = useState(60)
   const [mounted, setMounted] = useState(false)
 
@@ -76,10 +78,10 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#16161F', borderColor: 'rgba(160,120,32,0.3)', borderWidth: 1, titleColor: '#9A9A9A', bodyColor: '#C9A96E' } },
+    plugins: { legend: { display: false }, tooltip: { backgroundColor: 'var(--card)', borderColor: 'rgba(160,120,32,0.3)', borderWidth: 1, titleColor: 'var(--t3)', bodyColor: '#C9A96E' } },
     scales: {
-      x: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#555560', font: { family: 'DM Mono', size: 10 } } },
-      y: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#555560', font: { family: 'DM Mono', size: 10 } } },
+      x: { grid: { color: 'rgba(160,120,32,0.1)' }, ticks: { color: 'var(--tm)', font: { family: 'DM Mono', size: 10 } } },
+      y: { grid: { color: 'rgba(160,120,32,0.1)' }, ticks: { color: 'var(--tm)', font: { family: 'DM Mono', size: 10 } } },
     },
   }
 
@@ -105,7 +107,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
     >
       <div style={{
         maxWidth: 900, width: '100%',
-        background: '#111118',
+        background: 'var(--surface)',
         border: '1px solid rgba(139,105,20,0.2)',
         boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
         maxHeight: '90vh', overflowY: 'auto',
@@ -119,7 +121,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
           onClick={onClose}
           style={{
             position: 'absolute', top: 14, right: 14, zIndex: 10,
-            background: 'rgba(9,9,15,0.7)', border: '1px solid rgba(139,105,20,0.2)',
+            background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(139,105,20,0.2)',
             borderRadius: '50%', width: 32, height: 32,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', color: '#C9A96E',
@@ -133,7 +135,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
           {c.image ? (
             <img src={c.image} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.5)' }} />
           ) : (
-            <div style={{ width: '100%', height: '100%', background: '#16161F' }} />
+            <div style={{ width: '100%', height: '100%', background: 'var(--card)' }} />
           )}
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(17,17,24,1) 0%, rgba(17,17,24,0.3) 50%, transparent 100%)' }} />
 
@@ -181,7 +183,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
               borderRight: i < 3 ? '1px solid rgba(139,105,20,0.1)' : 'none',
               textAlign: 'center',
             }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#555560', letterSpacing: '0.1em', marginBottom: 4 }}>{m.label}</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: 'var(--tm)', letterSpacing: '0.1em', marginBottom: 4 }}>{m.label}</div>
               <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', fontWeight: 400, color: '#C9A96E' }}>{m.value}</div>
             </div>
           ))}
@@ -192,8 +194,8 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
           {/* Left column */}
           <div style={{ padding: '1.5rem', borderRight: '1px solid rgba(139,105,20,0.1)' }}>
             {/* Description */}
-            <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#555560', letterSpacing: '0.12em', marginBottom: 8, textTransform: 'uppercase' }}>Описание</h4>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: '#CCCCCC', lineHeight: 1.7, marginBottom: '1.5rem' }}>{c.description}</p>
+            <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 8, textTransform: 'uppercase' }}>Описание</h4>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: 'var(--t2)', lineHeight: 1.7, marginBottom: '1.5rem' }}>{c.description}</p>
 
             {/* Info table */}
             <div style={{ marginBottom: '1.5rem' }}>
@@ -208,8 +210,8 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                   borderBottom: '1px solid rgba(139,105,20,0.08)',
                   padding: '0.45rem 0',
                 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#555560', letterSpacing: '0.06em' }}>{row.label}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: '#CCCCCC' }}>{row.value}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.06em' }}>{row.label}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)' }}>{row.value}</span>
                 </div>
               ))}
             </div>
@@ -221,7 +223,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
               </div>
               <div style={{ marginBottom: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#9A9A9A' }}>Площадь: {area} м²</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--t3)' }}>Площадь: {area} м²</span>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#C9A96E' }}>
                     ${totalCost.toLocaleString()}
                   </span>
@@ -235,12 +237,12 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
               {[
                 { label: 'Стоимость', value: `$${totalCost.toLocaleString()}` },
                 { label: 'Нал. в год', value: `$${annualTax.toFixed(0)}` },
-                { label: 'Возврат', value: c.tax_refund ? `$${refundAmt.toFixed(0)}` : 'Нет', color: c.tax_refund ? '#2A9D8F' : '#555560' },
+                { label: 'Возврат', value: c.tax_refund ? `$${refundAmt.toFixed(0)}` : 'Нет', color: c.tax_refund ? '#2A9D8F' : 'var(--tm)' },
                 { label: 'Нал. чистый', value: `$${netTax.toFixed(0)}` },
               ].map((row, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#555560' }}>{row.label}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: row.color ?? '#CCCCCC' }}>{row.value}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: 'var(--tm)' }}>{row.label}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: row.color ?? 'var(--t2)' }}>{row.value}</span>
                 </div>
               ))}
             </div>
@@ -249,7 +251,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
           {/* Right column */}
           <div style={{ padding: '1.5rem' }}>
             {/* Price chart */}
-            <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#555560', letterSpacing: '0.12em', marginBottom: 12, textTransform: 'uppercase' }}>
+            <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 12, textTransform: 'uppercase' }}>
               Динамика цен
             </h4>
             <div style={{ height: 160, marginBottom: 8 }}>
@@ -263,11 +265,11 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
             </div>
 
             {/* Mini-map */}
-            <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#555560', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>
+            <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>
               На карте
             </h4>
             <div style={{ height: 180, marginBottom: '1.5rem', border: '1px solid rgba(139,105,20,0.15)', overflow: 'hidden' }}>
-              <MiniMap lat={c.lat} lng={c.lng} name={c.name} />
+              <MiniMap lat={c.lat} lng={c.lng} name={c.name} theme={theme} />
             </div>
 
             {/* CTA buttons */}
