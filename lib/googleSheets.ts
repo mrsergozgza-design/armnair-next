@@ -36,9 +36,13 @@ function rowToComplex(row: Record<string, string>, index: number): Complex | nul
   // Project — главное название; если пусто, фоллбэк на developer
   const name = project || developer || 'Unnamed'
 
-  // Slight coordinate offset so markers don't stack exactly
+  // Coordinates: use sheet values if present, else spread around Yerevan center
+  const latSheet = parseFloat(row['lat'] || '')
+  const lngSheet = parseFloat(row['lng'] || '')
   const latOffset = (index % 7 - 3) * 0.003
   const lngOffset = (Math.floor(index / 7) % 5 - 2) * 0.003
+  const lat = latSheet || (40.1792 + latOffset)
+  const lng = lngSheet || (44.5134 + lngOffset)
 
   return {
     id:           slugify(`${project ?? developer ?? ''}-${location ?? ''}-${index}`),
@@ -51,8 +55,8 @@ function rowToComplex(row: Record<string, string>, index: number): Complex | nul
     tax_refund:   false,
     yield:        payPlan ?? '—',
     last_updated: today(),
-    lat:          40.1872 + latOffset,
-    lng:          44.515  + lngOffset,
+    lat,
+    lng,
     history:      [],
     description:  row['преимущества']?.trim() ?? '',
     presentation: website,

@@ -11,7 +11,7 @@ interface Filters {
   tax: string; status: string; search: string
 }
 
-const DEFAULT_FILTERS: Filters = { district:'', developer:'', price:10000, tax:'', status:'', search:'' }
+const DEFAULT_FILTERS: Filters = { district:'', developer:'', price:9_999_999, tax:'', status:'', search:'' }
 
 type SortKey = 'default' | 'price_asc' | 'price_desc' | 'yield_desc'
 

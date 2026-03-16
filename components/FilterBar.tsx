@@ -19,8 +19,8 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
   const statuses   = Array.from(new Set(data.map(c => c.status))).sort()
 
   const set = (k: keyof Filters, v: string | number) => onFiltersChange({ ...filters, [k]: v })
-  const reset = () => onFiltersChange({ district:'', developer:'', price:10000, tax:'', status:'', search:'' })
-  const hasFilters = filters.district || filters.developer || filters.price < 10000 || filters.tax || filters.status || filters.search
+  const reset = () => onFiltersChange({ district:'', developer:'', price:9_999_999, tax:'', status:'', search:'' })
+  const hasFilters = filters.district || filters.developer || filters.price < 9_999_999 || filters.tax || filters.status || filters.search
 
   return (
     <div style={{
@@ -80,11 +80,11 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
         </select>
 
         <select className="pill-sel" value={filters.price} onChange={e => set('price', Number(e.target.value))}>
-          <option value={10000}>Цена: любая</option>
-          <option value={2000}>до $2 000/м²</option>
-          <option value={3500}>до $3 500/м²</option>
-          <option value={5000}>до $5 000/м²</option>
-          <option value={7500}>до $7 500/м²</option>
+          <option value={9_999_999}>Цена: любая</option>
+          <option value={50_000}>до $50 000</option>
+          <option value={100_000}>до $100 000</option>
+          <option value={200_000}>до $200 000</option>
+          <option value={500_000}>до $500 000</option>
         </select>
 
         <select className="pill-sel" value={filters.status} onChange={e => set('status', e.target.value)}>

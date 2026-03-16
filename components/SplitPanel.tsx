@@ -39,6 +39,7 @@ export default function SplitPanel({ id, complexes, onCardClick }: Props) {
         padding:'1.25rem', paddingBottom:'5rem',
         transition:'border-color 0.25s',
       }}>
+        {console.log('Filtered Properties:', complexes) as undefined}
         {complexes.length === 0 ? (
           <div style={{
             display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
