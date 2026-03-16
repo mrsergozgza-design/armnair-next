@@ -1,11 +1,18 @@
 import Papa from 'papaparse'
 import type { Complex } from './types'
 
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/1scuCyAhUuHGh_XQVDbUWQEgdrP5lI1gzMUS4A9Uy8aE/export?format=csv&gid=0'
+// Первый лист — доступен без gid
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/1aJrXXy9P29U93reIW_V_nlPzu3axy5IGnXOmO5ETTNE/export?format=csv'
+
+/**
+ * Колонки листа (первая строка):
+ * ID | Name | Developer | District | Price_AMD | Tax_Refund | Status |
+ * Yield | Latitude | Longitude | Presentation_Link
+ */
 
 function slugify(s: string): string {
   return s.toLowerCase()
-    .replace(/[^a-zа-яёa-z0-9\s-]/gi, '')
+    .replace(/[^a-zа-яё0-9\s-]/gi, '')
     .trim()
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
@@ -17,57 +24,50 @@ function parseNum(val: string | undefined): number {
   return Number(val.replace(/[\s,]/g, '')) || 0
 }
 
+function parseBool(val: string | undefined): boolean {
+  if (!val) return false
+  const v = val.trim().toLowerCase()
+  return v === 'да' || v === 'true' || v === '1' || v === 'yes'
+}
+
+// "Arabkir (A. Hakobyan St.)" → "Arabkir"
+function baseDistrict(val: string): string {
+  return val.split('(')[0].trim()
+}
+
 function today(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
-function rowToComplex(row: Record<string, string>, index: number): Complex | null {
+function rowToComplex(row: Record<string, string>): Complex | null {
+  const name      = row['name']?.trim()
   const developer = row['developer']?.trim()
-  const location  = row['location']?.trim()
-  if (!developer && !location) return null
+  if (!name && !developer) return null
 
-  const project   = row['project']?.trim()             // новый столбец "Project"
-  const priceAmd  = parseNum(row['min_price_amd'])
+  const priceAmd  = parseNum(row['price_amd'])
   const priceUsd  = Math.round(priceAmd / 390)
-  const unitType  = row['unit_type']?.trim() || undefined
-  const payPlan   = row['payment_plan']?.trim() || undefined
-  const website   = row['сайт,_ссылка']?.trim() || row['website']?.trim() || undefined
-
-  // Project — главное название; если пусто, фоллбэк на developer
-  const name = project || developer || 'Unnamed'
-
-  // Coordinates: use sheet values if present, else spread around Yerevan center
-  const latSheet = parseFloat(row['lat'] || '')
-  const lngSheet = parseFloat(row['lng'] || '')
-  const latOffset = (index % 7 - 3) * 0.003
-  const lngOffset = (Math.floor(index / 7) % 5 - 2) * 0.003
-  const lat = latSheet || (40.1792 + latOffset)
-  const lng = lngSheet || (44.5134 + lngOffset)
+  const lat       = parseFloat(row['latitude']  || '') || 0
+  const lng       = parseFloat(row['longitude'] || '') || 0
+  const rawId     = row['id']?.trim()
+  const district  = baseDistrict(row['district'] ?? '')
 
   return {
-    id:           slugify(`${project ?? developer ?? ''}-${location ?? ''}-${index}`),
-    name,
-    developer:    developer ?? '',
-    district:     location  ?? '',
+    id:           rawId ? slugify(`${rawId}-${name ?? ''}`) : slugify(`${name ?? ''}-${district}`),
+    name:         name         ?? developer ?? 'Unnamed',
+    developer:    developer    ?? '',
+    district,
     price_amd:    priceAmd,
     price_usd:    priceUsd,
-    status:       'Available',
-    tax_refund:   false,
-    yield:        payPlan ?? '—',
+    status:       row['status']?.trim()              ?? 'Available',
+    tax_refund:   parseBool(row['tax_refund']),
+    yield:        row['yield']?.trim()               ?? '—',
     last_updated: today(),
     lat,
     lng,
     history:      [],
-    description:  row['преимущества']?.trim() ?? '',
-    presentation: website,
-    website,
-    unit_type:    unitType,
-    min_area:     row['min_total_area,_м2']?.trim() || undefined,
-    payment_plan: payPlan,
-    subway_station: row['subway_stancion']?.trim() || undefined,
-    infrastructure: row['school/kindergarten/mall/university']?.trim() || undefined,
-    commission:   row['commission,_%']?.trim() || undefined,
-    contact:      row['контактное_лицо_(почта,_тел)']?.trim() || undefined,
+    description:  '',
+    presentation: row['presentation_link']?.trim()   || undefined,
+    // Extended fields not in this sheet — undefined by default
   }
 }
 
@@ -84,7 +84,6 @@ export async function fetchComplexesFromSheets(): Promise<Complex[]> {
   const { data, errors } = Papa.parse<Record<string, string>>(csvText, {
     header: true,
     skipEmptyLines: true,
-    // Normalise header: lowercase, spaces/commas/brackets → underscores
     transformHeader: h => h.trim()
       .toLowerCase()
       .replace(/[\s,()]/g, '_')
@@ -96,7 +95,10 @@ export async function fetchComplexesFromSheets(): Promise<Complex[]> {
     console.warn('[googleSheets] CSV parse warnings:', errors.slice(0, 3))
   }
 
-  return data
-    .map((row, i) => rowToComplex(row, i))
+  const complexes = data
+    .map(rowToComplex)
     .filter((c): c is Complex => c !== null)
+
+  console.log(`[googleSheets] Загружено ${complexes.length} объектов из таблицы`)
+  return complexes
 }
