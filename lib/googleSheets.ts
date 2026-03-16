@@ -26,22 +26,22 @@ function rowToComplex(row: Record<string, string>, index: number): Complex | nul
   const location  = row['location']?.trim()
   if (!developer && !location) return null
 
+  const project   = row['project']?.trim()             // новый столбец "Project"
   const priceAmd  = parseNum(row['min_price_amd'])
   const priceUsd  = Math.round(priceAmd / 390)
   const unitType  = row['unit_type']?.trim() || undefined
   const payPlan   = row['payment_plan']?.trim() || undefined
   const website   = row['сайт,_ссылка']?.trim() || row['website']?.trim() || undefined
 
-  const name = unitType
-    ? `${developer} — ${unitType}`
-    : developer ?? 'Unnamed'
+  // Project — главное название; если пусто, фоллбэк на developer
+  const name = project || developer || 'Unnamed'
 
   // Slight coordinate offset so markers don't stack exactly
   const latOffset = (index % 7 - 3) * 0.003
   const lngOffset = (Math.floor(index / 7) % 5 - 2) * 0.003
 
   return {
-    id:           slugify(`${developer ?? ''}-${location ?? ''}-${unitType ?? ''}-${index}`),
+    id:           slugify(`${project ?? developer ?? ''}-${location ?? ''}-${index}`),
     name,
     developer:    developer ?? '',
     district:     location  ?? '',
