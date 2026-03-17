@@ -1,14 +1,19 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { Search, Phone, MessageCircle, Send, Sun, Moon } from 'lucide-react'
+import { Search, Phone, MessageCircle, Send, Sun, Moon, Heart, GitCompare } from 'lucide-react'
 import { useTheme } from './ThemeProvider'
 
 interface NavbarProps {
   activePage: 'home' | 'analytics' | 'catalog'
   onNav: (page: 'home' | 'analytics' | 'catalog', anchor?: string) => void
+  favCount?: number
+  favOnly?: boolean
+  onFavFilter?: () => void
+  compareCount?: number
+  onOpenCompare?: () => void
 }
 
-export default function Navbar({ activePage, onNav }: NavbarProps) {
+export default function Navbar({ activePage, onNav, favCount = 0, favOnly = false, onFavFilter, compareCount = 0, onOpenCompare }: NavbarProps) {
   const { theme, toggle } = useTheme()
   const [consultOpen, setConsultOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
@@ -42,7 +47,7 @@ export default function Navbar({ activePage, onNav }: NavbarProps) {
     }}>
       {/* Logo */}
       <button
-        onClick={() => onNav('home')}
+        onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); onNav('home') }}
         style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer' }}
       >
         <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
@@ -67,7 +72,13 @@ export default function Navbar({ activePage, onNav }: NavbarProps) {
           return (
             <button
               key={link.label}
-              onClick={() => onNav(link.page, link.anchor)}
+              onClick={() => {
+                if (activePage === link.page) {
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                } else {
+                  onNav(link.page, link.anchor)
+                }
+              }}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 fontFamily: 'var(--font-mono)', fontSize: '0.66rem',
@@ -95,7 +106,12 @@ export default function Navbar({ activePage, onNav }: NavbarProps) {
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {/* Search */}
-        <button style={{
+        <button
+          onClick={() => {
+            const el = document.getElementById('filter-search-input')
+            if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus() }
+          }}
+          style={{
           background: 'none', border: 'none', cursor: 'pointer',
           color: 'var(--t3)', padding: 6, display: 'flex', alignItems: 'center',
           transition: 'color 0.2s',
@@ -104,6 +120,54 @@ export default function Navbar({ activePage, onNav }: NavbarProps) {
           onMouseLeave={e => (e.currentTarget.style.color = 'var(--t3)')}
         >
           <Search size={15} />
+        </button>
+
+        {/* Compare button */}
+        {compareCount > 0 && (
+          <button
+            onClick={onOpenCompare}
+            title="Открыть сравнение"
+            style={{
+              background: 'rgba(160,120,32,0.12)',
+              border: '1px solid rgba(160,120,32,0.4)',
+              borderRadius: 100, cursor: 'pointer',
+              color: '#C9A96E',
+              padding: '4px 10px',
+              display: 'flex', alignItems: 'center', gap: 5,
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(160,120,32,0.22)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(160,120,32,0.12)')}
+          >
+            <GitCompare size={14} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', lineHeight: 1 }}>
+              {compareCount}
+            </span>
+          </button>
+        )}
+
+        {/* Favorites filter */}
+        <button
+          onClick={onFavFilter}
+          title={favOnly ? 'Показать все объекты' : 'Показать только избранное'}
+          style={{
+            background: favOnly ? 'rgba(201,169,110,0.15)' : 'none',
+            border: favOnly ? '1px solid rgba(201,169,110,0.4)' : 'none',
+            borderRadius: 100, cursor: 'pointer',
+            color: favOnly ? '#C9A96E' : 'var(--t3)',
+            padding: favOnly ? '4px 10px' : 6,
+            display: 'flex', alignItems: 'center', gap: 5,
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#C9A96E')}
+          onMouseLeave={e => (e.currentTarget.style.color = favOnly ? '#C9A96E' : 'var(--t3)')}
+        >
+          <Heart size={15} fill={favOnly ? '#C9A96E' : 'none'} color={favOnly ? '#C9A96E' : 'currentColor'} />
+          {favCount > 0 && (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', lineHeight: 1 }}>
+              {favCount}
+            </span>
+          )}
         </button>
 
         {/* Theme toggle */}

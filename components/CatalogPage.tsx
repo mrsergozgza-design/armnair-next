@@ -19,14 +19,21 @@ interface Props {
   data: Complex[]
   onOpenModal: (id: string) => void
   onBack: () => void
+  favorites?: Set<string>
+  onToggleFavorite?: (id: string) => void
+  favOnly?: boolean
+  onClearFavOnly?: () => void
+  compareIds?: string[]
+  onToggleCompare?: (id: string) => void
 }
 
-export default function CatalogPage({ data, onOpenModal, onBack }: Props) {
+export default function CatalogPage({ data, onOpenModal, onBack, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare }: Props) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [sort, setSort] = useState<SortKey>('default')
 
   const filtered = useMemo(() => {
     let result = data.filter(c => {
+      if (favOnly && !favorites?.has(c.id))                       return false
       if (filters.district  && c.district  !== filters.district)  return false
       if (filters.developer && c.developer !== filters.developer) return false
       if (c.price_usd > filters.price)                            return false
@@ -43,7 +50,7 @@ export default function CatalogPage({ data, onOpenModal, onBack }: Props) {
     if (sort === 'price_desc') result = [...result].sort((a,b) => b.price_usd - a.price_usd)
     if (sort === 'yield_desc') result = [...result].sort((a,b) => parseYield(b.yield) - parseYield(a.yield))
     return result
-  }, [data, filters, sort])
+  }, [data, filters, sort, favOnly, favorites])
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', paddingTop: 64 }}>
@@ -94,10 +101,29 @@ export default function CatalogPage({ data, onOpenModal, onBack }: Props) {
         {filtered.length === 0 ? (
           <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            minHeight: 300, color: 'var(--tm)', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', gap: 8,
+            minHeight: 380, gap: 16,
           }}>
-            <span style={{ fontSize: '2.5rem', opacity: 0.3 }}>◻</span>
-            <span>Нет объектов по выбранным фильтрам</span>
+            <span style={{ fontSize: '3rem', opacity: 0.25 }}>{favOnly ? '♡' : '◻'}</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--t3)', textAlign: 'center' }}>
+              {favOnly ? 'В вашем списке избранного пока ничего нет' : 'Нет объектов по выбранным фильтрам'}
+            </span>
+            <button
+              onClick={() => { setFilters(DEFAULT_FILTERS); onClearFavOnly?.() }}
+              style={{
+                marginTop: 8,
+                fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '0.1em',
+                padding: '0.6rem 1.5rem', cursor: 'pointer',
+                background: 'rgba(160,120,32,0.1)',
+                border: '1px solid rgba(160,120,32,0.45)',
+                color: 'var(--gold-b)',
+                borderRadius: 2,
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(160,120,32,0.22)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(160,120,32,0.1)')}
+            >
+              ПОКАЗАТЬ ВСЕ ОБЪЕКТЫ
+            </button>
           </div>
         ) : (
           <div style={{
@@ -106,7 +132,14 @@ export default function CatalogPage({ data, onOpenModal, onBack }: Props) {
             gap: 20,
           }}>
             {filtered.map(c => (
-              <PropertyCard key={c.id} complex={c} onClick={() => onOpenModal(c.id)} />
+              <PropertyCard
+                key={c.id} complex={c}
+                onClick={() => onOpenModal(c.id)}
+                isFavorite={favorites?.has(c.id)}
+                onToggleFavorite={() => onToggleFavorite?.(c.id)}
+                inCompare={compareIds?.includes(c.id)}
+                onToggleCompare={() => onToggleCompare?.(c.id)}
+              />
             ))}
           </div>
         )}

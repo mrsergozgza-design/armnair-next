@@ -65,7 +65,7 @@ function rowToComplex(row: Record<string, string>): Complex | null {
     lat,
     lng,
     history:      [],
-    description:  '',
+    description:  row['description']?.trim() || row['описание']?.trim() || '',
     presentation: row['presentation_link']?.trim()   || undefined,
     // Extended fields not in this sheet — undefined by default
   }

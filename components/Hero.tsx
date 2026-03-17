@@ -22,7 +22,7 @@ export default function Hero() {
         pointerEvents:'none',
       }} />
 
-      <div style={{ position:'relative', zIndex:1, maxWidth:900, margin:'0 auto', padding:'0 2rem' }}>
+      <div style={{ position:'relative', zIndex:1, padding:'0 2rem' }}>
         {/* Pulse dot + label */}
         <div style={{
           display:'flex', alignItems:'center', gap:8, marginBottom:'1rem',

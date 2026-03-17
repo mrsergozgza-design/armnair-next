@@ -1,6 +1,7 @@
 'use client'
 import 'leaflet/dist/leaflet.css'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
+import React from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { Complex } from '@/lib/types'
@@ -49,14 +50,38 @@ function FitBounds({ complexes }: { complexes: Complex[] }) {
   return null
 }
 
+function MapController({ complexes, focusId, markerRefs, onDone }: {
+  complexes: Complex[]
+  focusId: string | null | undefined
+  markerRefs: React.MutableRefObject<Map<string, L.Marker>>
+  onDone?: () => void
+}) {
+  const map = useMap()
+  useEffect(() => {
+    if (!focusId) return
+    const c = complexes.find(cx => cx.id === focusId)
+    if (!c || !c.lat || !c.lng) return
+    map.flyTo([c.lat, c.lng], 15, { animate: true, duration: 1.2 })
+    setTimeout(() => {
+      markerRefs.current.get(focusId)?.openPopup()
+      onDone?.()
+    }, 1300)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusId])
+  return null
+}
+
 interface Props {
   complexes: Complex[]
   onMarkerClick: (id: string) => void
   theme?: 'light' | 'dark'
   hoveredId?: string | null
+  mapFocusId?: string | null
+  onMapFocusDone?: () => void
 }
 
-export default function MapPanel({ complexes, onMarkerClick, theme = 'light', hoveredId }: Props) {
+export default function MapPanel({ complexes, onMarkerClick, theme = 'light', hoveredId, mapFocusId, onMapFocusDone }: Props) {
+  const markerRefs = useRef<Map<string, L.Marker>>(new Map())
   const tileUrl = theme === 'dark'
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
     : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
@@ -71,6 +96,7 @@ export default function MapPanel({ complexes, onMarkerClick, theme = 'light', ho
     >
       <TileLayer url={tileUrl} attribution="© OpenStreetMap © CARTO" maxZoom={19} />
       <FitBounds complexes={complexes} />
+      <MapController complexes={complexes} focusId={mapFocusId} markerRefs={markerRefs} onDone={onMapFocusDone} />
       {complexes.map(c => {
         const ss = statusStyle(c.status)
         const isHovered = c.id === hoveredId
@@ -80,6 +106,7 @@ export default function MapPanel({ complexes, onMarkerClick, theme = 'light', ho
             position={[c.lat, c.lng]}
             icon={isHovered ? GOLD_ICON_ACTIVE : GOLD_ICON}
             zIndexOffset={isHovered ? 1000 : 0}
+            ref={(ref) => { if (ref) markerRefs.current.set(c.id, ref as unknown as L.Marker) }}
             eventHandlers={{
               mouseover: (e) => e.target.openPopup(),
               mouseout: (e) => e.target.closePopup(),

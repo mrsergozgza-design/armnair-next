@@ -54,7 +54,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
         }}>
           <Search size={11} color="var(--t3)" />
           <input
-            type="text" placeholder="Поиск..." value={filters.search}
+            id="filter-search-input" type="text" placeholder="Поиск..." value={filters.search}
             onChange={e => set('search', e.target.value)}
             style={{
               background:'none', border:'none', outline:'none',
@@ -93,7 +93,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
         </select>
 
         <select className="pill-sel" value={filters.tax} onChange={e => set('tax', e.target.value)}>
-          <option value="">Нал. возврат</option>
+          <option value="">Возврат налога</option>
           <option value="yes">Есть</option>
           <option value="no">Нет</option>
         </select>

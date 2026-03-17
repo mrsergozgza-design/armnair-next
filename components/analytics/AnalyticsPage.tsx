@@ -28,7 +28,7 @@ export default function AnalyticsPage({ data, onOpenModal, onBack }: AnalyticsPa
     { label: 'Мин. цена/м²', value: `$${minPrice.toLocaleString()}` },
     { label: 'Средняя цена/м²', value: `$${avgPrice.toLocaleString()}` },
     { label: 'Макс. цена/м²', value: `$${maxPrice.toLocaleString()}` },
-    { label: 'Нал. возврат', value: String(taxCount) },
+    { label: 'Возврат налога', value: String(taxCount) },
   ]
 
   // District avg price data
@@ -187,7 +187,7 @@ export default function AnalyticsPage({ data, onOpenModal, onBack }: AnalyticsPa
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(139,105,20,0.1)' }}>
-                  {['Объект', 'Застройщик', 'Район', '$/м²', '֏/м²', 'Доходность', 'Статус', 'Возврат', ''].map(h => (
+                  {['Объект', 'Застройщик', 'Район', '$/м²', '֏/м²', 'Доходность', 'Статус', 'Возврат налога', ''].map(h => (
                     <th key={h} style={{
                       padding: '0.7rem 1rem', textAlign: 'left',
                       fontFamily: 'var(--font-mono)', fontSize: '0.58rem',

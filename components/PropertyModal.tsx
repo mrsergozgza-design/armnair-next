@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { X, Download, ArrowRight, TrendingUp, Phone, MessageCircle } from 'lucide-react'
+import { X, Download, TrendingUp, Phone, MessageCircle, Heart, GitCompare } from 'lucide-react'
 import { Complex } from '@/lib/types'
 import { fmtAmd, fmtDate, statusStyle, parseYield, priceGrowth } from '@/lib/utils'
 import { useTheme } from './ThemeProvider'
@@ -19,13 +19,21 @@ interface PropertyModalProps {
   complex: Complex | null
   onClose: () => void
   onOpenContact: () => void
-  onOpenMap: () => void
+  onOpenMap: (id: string) => void
+  isFavorite?: boolean
+  onToggleFavorite?: () => void
+  inCompare?: boolean
+  onToggleCompare?: () => void
 }
 
-export default function PropertyModal({ complex: c, onClose, onOpenContact, onOpenMap }: PropertyModalProps) {
+export default function PropertyModal({ complex: c, onClose, onOpenContact, onOpenMap, isFavorite = false, onToggleFavorite, inCompare = false, onToggleCompare }: PropertyModalProps) {
   const { theme } = useTheme()
   const [area, setArea] = useState(60)
+  const [interestRate, setInterestRate] = useState(11)
+  const [loanPct, setLoanPct] = useState(0.80) // доля кредита от стоимости, default 80% (взнос 20%)
+  const [salary, setSalary] = useState(600000)
   const [mounted, setMounted] = useState(false)
+  const [heartAnim, setHeartAnim] = useState(false)
 
   useEffect(() => {
     if (c) {
@@ -50,13 +58,22 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   const yld = parseYield(c.yield)
   const growth = priceGrowth(c.history)
 
-  // Tax calculator
-  const totalCost = c.price_usd * area
-  const annualRent = totalCost * (yld / 100)
-  const taxRate = 0.10
-  const annualTax = annualRent * taxRate
-  const refundAmt = c.tax_refund ? annualTax * 0.5 : 0
-  const netTax = annualTax - refundAmt
+  // Tax calculator — mortgage-based refund (Armenian law)
+  const INCOME_TAX_RATE = 0.20
+  const MONTHLY_REFUND_CAP = 500_000 // ֏ — max 1.5M/quarter
+
+  const priceAmd = c.price_amd * area
+  // Сумма ипотеки: шаг 1M AMD, зажата в диапазон 10–90% от стоимости
+  const loanStep = 1_000_000
+  const loanMin = Math.ceil(priceAmd * 0.10 / loanStep) * loanStep
+  const loanMax = Math.floor(priceAmd * 0.90 / loanStep) * loanStep
+  const loanAmt = Math.min(loanMax, Math.max(loanMin, Math.round(loanPct * priceAmd / loanStep) * loanStep))
+  const downPct = Math.round((1 - loanAmt / priceAmd) * 100)
+
+  const monthlyInterest = (loanAmt * (interestRate / 100)) / 12
+  const incomeTax = salary * INCOME_TAX_RATE
+  const refundAmt = c.tax_refund ? Math.min(incomeTax, monthlyInterest, MONTHLY_REFUND_CAP) : 0
+  const realPayment = monthlyInterest - refundAmt
 
   // Chart data
   const chartData = {
@@ -89,7 +106,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
     { label: '$/м²', value: `$${c.price_usd.toLocaleString()}` },
     { label: '֏/м²', value: fmtAmd(c.price_amd) },
     { label: 'Доходность', value: c.yield },
-    { label: 'Нал. возврат', value: c.tax_refund ? 'Да' : 'Нет' },
+    { label: 'Возврат налога', value: c.tax_refund ? 'Да' : 'Нет' },
   ]
 
   return (
@@ -130,6 +147,40 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
           <X size={15} />
         </button>
 
+        {/* Compare button */}
+        <button
+          onClick={onToggleCompare}
+          title={inCompare ? 'Убрать из сравнения' : 'Добавить к сравнению'}
+          style={{
+            position: 'absolute', top: 14, right: 94, zIndex: 10,
+            background: inCompare ? 'rgba(160,120,32,0.25)' : 'rgba(0,0,0,0.5)',
+            border: inCompare ? '1px solid rgba(201,169,110,0.5)' : '1px solid rgba(139,105,20,0.2)',
+            borderRadius: '50%', width: 32, height: 32,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', transition: 'background 0.2s',
+          }}
+        >
+          <GitCompare size={14} color="#C9A96E" />
+        </button>
+
+        {/* Favorite button */}
+        <button
+          onClick={() => { setHeartAnim(true); onToggleFavorite?.() }}
+          onAnimationEnd={() => setHeartAnim(false)}
+          className={heartAnim ? 'heart-pop' : ''}
+          title={isFavorite ? 'Убрать из избранного' : 'Добавить в избранное'}
+          style={{
+            position: 'absolute', top: 14, right: 54, zIndex: 10,
+            background: isFavorite ? 'rgba(201,169,110,0.18)' : 'rgba(0,0,0,0.5)',
+            border: isFavorite ? '1px solid rgba(201,169,110,0.5)' : '1px solid rgba(139,105,20,0.2)',
+            borderRadius: '50%', width: 32, height: 32,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', transition: 'background 0.2s, border-color 0.2s',
+          }}
+        >
+          <Heart size={15} fill={isFavorite ? '#C9A96E' : 'none'} color="#C9A96E" />
+        </button>
+
         {/* Hero image */}
         <div style={{ position: 'relative', height: 260, overflow: 'hidden' }}>
           {c.image ? (
@@ -146,7 +197,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
             </div>
             {c.tax_refund && (
               <div style={{ background: 'rgba(42,157,143,0.8)', borderRadius: 2, fontFamily: 'var(--font-mono)', fontSize: '0.6rem', padding: '3px 10px', color: '#fff', letterSpacing: '0.06em' }}>
-                НАЛ. ВОЗВРАТ
+                ВОЗВРАТ НАЛОГА
               </div>
             )}
           </div>
@@ -158,17 +209,26 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
           </div>
         </div>
 
-        {/* Presentation download bar */}
+        {/* Presentation CTA — directly under hero */}
         {c.presentation && (
-          <a href={c.presentation} target="_blank" rel="noopener noreferrer" style={{
-            display: 'flex', alignItems: 'center', gap: 10, padding: '0.75rem 1.5rem',
-            background: 'rgba(160,120,32,0.08)', borderBottom: '1px solid rgba(160,120,32,0.15)',
-            color: '#C9A96E', textDecoration: 'none',
-            fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.06em',
-          }}>
-            <Download size={14} />
-            <span>Скачать презентацию объекта</span>
-            <ArrowRight size={13} style={{ marginLeft: 'auto' }} />
+          <a
+            href={c.presentation}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              background: 'linear-gradient(135deg, #C9A96E 0%, #A68238 50%, #8B6A28 100%)',
+              color: '#fff', textDecoration: 'none',
+              fontFamily: 'var(--font-mono)', fontSize: '0.78rem',
+              letterSpacing: '0.12em', padding: '1rem 1.5rem',
+              boxShadow: '0 4px 24px rgba(166,130,56,0.3)',
+              transition: 'opacity 0.2s, box-shadow 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; e.currentTarget.style.boxShadow = '0 6px 32px rgba(166,130,56,0.5)' }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(166,130,56,0.3)' }}
+          >
+            <Download size={16} />
+            СКАЧАТЬ ПРЕЗЕНТАЦИЮ ОБЪЕКТА
           </a>
         )}
 
@@ -260,32 +320,101 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
             {/* Tax calculator */}
             <div style={{ background: 'rgba(160,120,32,0.05)', border: '1px solid rgba(160,120,32,0.12)', borderRadius: 4, padding: '1rem' }}>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#A07820', letterSpacing: '0.12em', marginBottom: 12, textTransform: 'uppercase' }}>
-                Калькулятор
+                Налоговый калькулятор
               </div>
-              <div style={{ marginBottom: 8 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--t3)' }}>Площадь: {area} м²</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#C9A96E' }}>
-                    ${totalCost.toLocaleString()}
+
+              {/* Параметры объекта */}
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+                Параметры объекта
+              </div>
+              <div style={{ marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>Площадь</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{area} м²  ·  {fmtAmd(priceAmd)}</span>
+                </div>
+                <input type="range" min={30} max={300} value={area}
+                  onChange={e => setArea(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#A07820', cursor: 'pointer', marginBottom: 10 }} />
+              </div>
+
+              {/* Параметры ипотеки */}
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8, marginTop: 4 }}>
+                Параметры ипотеки
+              </div>
+
+              {/* Сумма ипотеки */}
+              <div style={{ marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>Сумма ипотеки</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>
+                    {fmtAmd(loanAmt)}  ·  взнос {downPct}%
                   </span>
                 </div>
-                <input
-                  type="range" min={30} max={300} value={area}
-                  onChange={e => setArea(Number(e.target.value))}
-                  style={{ width: '100%', accentColor: '#A07820', cursor: 'pointer' }}
-                />
+                <input type="range" min={loanMin} max={loanMax} step={loanStep} value={loanAmt}
+                  onChange={e => setLoanPct(Number(e.target.value) / priceAmd)}
+                  style={{ width: '100%', accentColor: '#A07820', cursor: 'pointer', marginBottom: 10 }} />
+              </div>
+
+              {/* Ставка */}
+              <div style={{ marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>Процентная ставка</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{interestRate}% годовых</span>
+                </div>
+                <input type="range" min={8} max={15} step={0.5} value={interestRate}
+                  onChange={e => setInterestRate(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#A07820', cursor: 'pointer', marginBottom: 10 }} />
+              </div>
+
+              {/* Зарплата */}
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>Официальная зарплата</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{fmtAmd(salary)}/мес</span>
+                </div>
+                <input type="range" min={200000} max={2000000} step={50000} value={salary}
+                  onChange={e => setSalary(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#A07820', cursor: 'pointer' }} />
+              </div>
+
+              {/* Результаты */}
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8, paddingTop: 4, borderTop: '1px solid rgba(160,120,32,0.12)' }}>
+                Результаты
               </div>
               {[
-                { label: 'Стоимость', value: `$${totalCost.toLocaleString()}` },
-                { label: 'Нал. в год', value: `$${annualTax.toFixed(0)}` },
-                { label: 'Возврат', value: c.tax_refund ? `$${refundAmt.toFixed(0)}` : 'Нет', color: c.tax_refund ? '#2A9D8F' : 'var(--tm)' },
-                { label: 'Нал. чистый', value: `$${netTax.toFixed(0)}` },
+                { label: 'Подоходный налог (20%)', value: fmtAmd(Math.round(incomeTax)) + '/мес' },
+                { label: 'Проценты по ипотеке (в месяц)', value: fmtAmd(Math.round(monthlyInterest)) },
+                { label: 'Сумма возврата (до 500к ֏)', value: c.tax_refund ? fmtAmd(Math.round(refundAmt)) + '/мес' : 'Нет', color: c.tax_refund ? '#2A9D8F' : 'var(--tm)' },
               ].map((row, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: 'var(--tm)' }}>{row.label}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: row.color ?? 'var(--t2)' }}>{row.value}</span>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '0.32rem 0', borderBottom: '1px solid rgba(160,120,32,0.06)', gap: 12 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)' }}>{row.label}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.66rem', color: row.color ?? 'var(--t2)', textAlign: 'right', flexShrink: 0 }}>{row.value}</span>
                 </div>
               ))}
+
+              {/* Ваш реальный платеж — акцент */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '0.45rem 0', gap: 12 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t2)', fontWeight: 700 }}>Ваш реальный платеж по %</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#C9A96E', fontWeight: 700, flexShrink: 0 }}>{fmtAmd(Math.round(realPayment))}/мес</span>
+              </div>
+
+              {/* Итоговая выгода */}
+              {c.tax_refund && (
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  marginTop: 10, padding: '0.6rem 0.75rem',
+                  background: 'rgba(160,120,32,0.12)', border: '1px solid rgba(160,120,32,0.3)',
+                  borderRadius: 3, gap: 12,
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#C9A96E', letterSpacing: '0.04em' }}>Итоговая выгода за год</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: '#C9A96E', fontWeight: 600, flexShrink: 0 }}>{fmtAmd(Math.round(refundAmt * 12))}</span>
+                </div>
+              )}
+
+              {/* Disclaimer */}
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.57rem', color: 'var(--tm)', marginTop: 12, lineHeight: 1.6, opacity: 0.75 }}>
+                * Расчет является приблизительным. Максимальный возврат ограничен 1.5 млн ֏ в квартал согласно законодательству РА.
+              </div>
             </div>
           </div>
 
@@ -309,7 +438,11 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
             <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>
               На карте
             </h4>
-            <div style={{ height: 180, marginBottom: '1.5rem', border: '1px solid rgba(139,105,20,0.15)', overflow: 'hidden' }}>
+            <div
+              onClick={() => onOpenMap(c.id)}
+              title="Открыть на карте"
+              style={{ height: 180, marginBottom: '1.5rem', border: '1px solid rgba(139,105,20,0.15)', overflow: 'hidden', cursor: 'pointer' }}
+            >
               <MiniMap lat={c.lat} lng={c.lng} name={c.name} theme={theme} />
             </div>
 
