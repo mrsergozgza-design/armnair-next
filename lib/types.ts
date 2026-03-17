@@ -6,6 +6,8 @@ export interface Complex {
   price_amd: number; price_usd: number; status: string; tax_refund: boolean;
   yield: string; last_updated: string; lat: number; lng: number;
   presentation?: string; history: PricePoint[]; description: string; image?: string;
+  images?: string[]        // from Main_Images — comma-separated direct URLs
+  media_folder?: string    // from Media_Folder_Link
 
   // Extended fields from Google Sheets
   unit_type?: string;         // Unit type

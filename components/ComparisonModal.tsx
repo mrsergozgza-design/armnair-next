@@ -194,10 +194,13 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
           </div>
         </div>
 
+        {/* Scrollable table area */}
+        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+
         {/* Object headers */}
-        <div style={{ display: 'flex', borderBottom: '1px solid rgba(139,105,20,0.15)' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(139,105,20,0.15)', minWidth: 480 }}>
           {/* Label column */}
-          <div style={{ width: 160, flexShrink: 0 }} />
+          <div style={{ width: 130, flexShrink: 0 }} />
           {complexes.map(c => (
             <div key={c.id} style={{
               width: colW, flex: 1,
@@ -252,13 +255,14 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
             key={ri}
             style={{
               display: 'flex',
+              minWidth: 480,
               borderBottom: '1px solid rgba(139,105,20,0.07)',
               background: ri % 2 === 0 ? 'transparent' : 'rgba(160,120,32,0.02)',
             }}
           >
             {/* Label */}
             <div style={{
-              width: 160, flexShrink: 0, padding: '0.55rem 1rem',
+              width: 130, flexShrink: 0, padding: '0.55rem 1rem',
               display: 'flex', alignItems: 'center',
             }}>
               <span style={{
@@ -297,11 +301,13 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
           </div>
         ))}
 
-        <div style={{ padding: '0.75rem 1rem', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ padding: '0.75rem 1rem', display: 'flex', justifyContent: 'center', minWidth: 480 }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.57rem', color: 'var(--tm)', letterSpacing: '0.04em' }}>
             Нажмите на название объекта, чтобы открыть детальную карточку
           </span>
         </div>
+
+        </div>{/* end scrollable */}
       </div>
     </div>
   )

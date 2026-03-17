@@ -10,6 +10,50 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/1aJrXXy9P29U93reIW_V_nlP
  * Yield | Latitude | Longitude | Presentation_Link
  */
 
+/**
+ * Extract Google Drive FILE_ID from any Drive URL format.
+ * Returns null for folder links or unrecognized formats.
+ */
+function extractDriveFileId(url: string): string | null {
+  if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) return null
+  if (url.includes('/folders/')) return null  // folder, not a file
+
+  // /file/d/FILE_ID/...
+  const filePath = url.match(/\/file\/d\/([a-zA-Z0-9_-]{10,})/)
+  if (filePath) return filePath[1]
+
+  // ?id=FILE_ID or &id=FILE_ID
+  const idParam = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/)
+  if (idParam) return idParam[1]
+
+  return null
+}
+
+/**
+ * Convert any Google Drive share link to a browser-renderable thumbnail URL.
+ * - File links  → https://drive.google.com/thumbnail?id=FILE_ID&sz=w1200
+ * - Folder links → null (caller should store as media_folder)
+ * - Non-Drive   → returned as-is
+ */
+function convertDriveUrl(url: string): string | null {
+  const trimmed = url.trim()
+  if (!trimmed) return null
+
+  if (!trimmed.includes('drive.google.com') && !trimmed.includes('docs.google.com')) {
+    return trimmed // non-Drive URL → keep as-is
+  }
+
+  if (trimmed.includes('/folders/')) return null // folder link → skip
+
+  const fileId = extractDriveFileId(trimmed)
+  if (fileId) {
+    // thumbnail endpoint: works without redirect, reliable in <img> tags
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`
+  }
+
+  return null // unrecognized Drive URL → skip
+}
+
 function slugify(s: string): string {
   return s.toLowerCase()
     .replace(/[^a-zа-яё0-9\s-]/gi, '')
@@ -51,6 +95,26 @@ function rowToComplex(row: Record<string, string>): Complex | null {
   const rawId     = row['id']?.trim()
   const district  = baseDistrict(row['district'] ?? '')
 
+  // Parse Main_Images: comma-separated URLs, convert Drive file links
+  const rawImages = row['main_images']?.trim() ?? ''
+  const rawUrls = rawImages
+    .split(',')
+    .map((s: string) => s.trim())
+    .filter((s: string) => s.length > 0 && s !== '-' && s !== '—')
+
+  // Folder links inside Main_Images (used as media_folder fallback)
+  const folderFromImages = rawUrls.find(u => u.includes('drive.google.com') && u.includes('/folders/'))
+
+  // Convert each URL: Drive file links → uc?export=view, folder links → null (skip)
+  const images = rawUrls
+    .map(convertDriveUrl)
+    .filter((u): u is string => u !== null)
+
+  // First image for backward-compat `image` field
+  const firstImage = images[0] ?? undefined
+
+  const mediaFolder = row['media_folder_link']?.trim() || folderFromImages || undefined
+
   return {
     id:           rawId ? slugify(`${rawId}-${name ?? ''}`) : slugify(`${name ?? ''}-${district}`),
     name:         name         ?? developer ?? 'Unnamed',
@@ -67,6 +131,9 @@ function rowToComplex(row: Record<string, string>): Complex | null {
     history:      [],
     description:  row['description']?.trim() || row['описание']?.trim() || '',
     presentation: row['presentation_link']?.trim()   || undefined,
+    image:        firstImage,
+    images:       images.length > 0 ? images        : undefined,
+    media_folder: mediaFolder,
     // Extended fields not in this sheet — undefined by default
   }
 }

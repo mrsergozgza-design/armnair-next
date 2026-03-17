@@ -134,6 +134,22 @@ html, body {
 /* ── Scroll lock ────────────────────────────────────────────── */
 body.modal-open { overflow: hidden; }
 
+/* ── Mobile utilities ───────────────────────────────────────── */
+.mobile-only  { display: none !important; }
+.desktop-only { display: flex; }
+
+@media (max-width: 768px) {
+  .mobile-only  { display: flex !important; }
+  .desktop-only { display: none !important; }
+
+  /* Extra space at bottom for the tab bar */
+  body { padding-bottom: 64px; }
+
+  /* Navbar: only logo + theme on mobile */
+  .nav-center   { display: none !important; }
+  .nav-right-extra { display: none !important; }
+}
+
 /* ── Pill selects ───────────────────────────────────────────── */
 .pill-sel {
   border-radius: 100px !important;

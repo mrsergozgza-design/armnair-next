@@ -1,8 +1,12 @@
 'use client'
-import { memo, useState, useCallback } from 'react'
+import { memo, useState, useCallback, useRef } from 'react'
+import Image from 'next/image'
 import { Complex } from '@/lib/types'
 import { fmtAmd, statusStyle, freshLabel, priceGrowth } from '@/lib/utils'
-import { ArrowRight, Heart, GitCompare } from 'lucide-react'
+import { ArrowRight, Heart, GitCompare, ChevronLeft, ChevronRight } from 'lucide-react'
+
+// Тёмный 1×1 placeholder пока грузится реальное фото
+const BLUR_PLACEHOLDER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII='
 
 interface Props {
   complex: Complex
@@ -19,6 +23,12 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
   const fresh = freshLabel(c.last_updated)
   const growth = priceGrowth(c.history)
   const [heartAnim, setHeartAnim] = useState(false)
+  const [slideIdx, setSlideIdx] = useState(0)
+  const [hovering, setHovering] = useState(false)
+  const touchStartX = useRef(0)
+
+  // Все фото уже в DOM — переключение только через opacity
+  const allImages = c.images ?? (c.image ? [c.image] : [])
 
   const handleHeart = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
@@ -47,23 +57,119 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
         e.currentTarget.style.borderColor = 'rgba(160,120,32,0.4)'
         e.currentTarget.style.transform = 'translateY(-4px)'
         e.currentTarget.style.boxShadow = 'var(--card-shadow-hover)'
+        setHovering(true)
         onHover?.(c.id)
       }}
       onMouseLeave={e => {
         e.currentTarget.style.borderColor = isFavorite ? 'rgba(201,169,110,0.55)' : 'var(--border-c)'
         e.currentTarget.style.transform = 'translateY(0)'
         e.currentTarget.style.boxShadow = favShadow
+        setHovering(false)
         onHover?.(null)
       }}
     >
-      {/* Image */}
-      <div style={{ position: 'relative', height: 190, background: 'var(--surface)', overflow: 'hidden' }}>
-        {c.image && (
-          <img src={c.image} alt={c.name} loading="lazy"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: `brightness(var(--img-brightness))` }}
-          />
+      {/* Image / Slider */}
+      <div
+        style={{ position: 'relative', height: 190, background: 'var(--surface)', overflow: 'hidden' }}
+        onTouchStart={e => { touchStartX.current = e.touches[0].clientX }}
+        onTouchEnd={e => {
+          if (allImages.length <= 1) return
+          const diff = touchStartX.current - e.changedTouches[0].clientX
+          if (Math.abs(diff) > 40) {
+            if (diff > 0) setSlideIdx(i => (i + 1) % allImages.length)
+            else setSlideIdx(i => (i - 1 + allImages.length) % allImages.length)
+          }
+        }}
+      >
+
+        {allImages.length > 0 ? (
+          <>
+            {/* Все фото рендерятся сразу — переключение через opacity */}
+            {allImages.map((url, i) => (
+              <div
+                key={i}
+                style={{
+                  position: 'absolute', inset: 0,
+                  opacity: i === slideIdx ? 1 : 0,
+                  transition: 'opacity 0.3s ease',
+                }}
+              >
+                <Image
+                  src={url}
+                  alt={c.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  quality={75}
+                  priority={i === 0}
+                  placeholder="blur"
+                  blurDataURL={BLUR_PLACEHOLDER}
+                  style={{ objectFit: 'cover', filter: 'brightness(var(--img-brightness))' }}
+                />
+              </div>
+            ))}
+
+            {/* Стрелки — появляются при наведении */}
+            {hovering && allImages.length > 1 && (
+              <>
+                <button
+                  onClick={e => { e.stopPropagation(); setSlideIdx(i => (i - 1 + allImages.length) % allImages.length) }}
+                  style={{
+                    position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
+                    background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '50%', width: 30, height: 30,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', color: '#fff', zIndex: 5,
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.85)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.6)')}
+                >
+                  <ChevronLeft size={15} />
+                </button>
+                <button
+                  onClick={e => { e.stopPropagation(); setSlideIdx(i => (i + 1) % allImages.length) }}
+                  style={{
+                    position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                    background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '50%', width: 30, height: 30,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', color: '#fff', zIndex: 5,
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.85)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.6)')}
+                >
+                  <ChevronRight size={15} />
+                </button>
+              </>
+            )}
+
+            {/* Точки-индикаторы */}
+            {allImages.length > 1 && (
+              <div style={{
+                position: 'absolute', bottom: 44, left: '50%', transform: 'translateX(-50%)',
+                display: 'flex', gap: 5, zIndex: 4,
+              }}>
+                {allImages.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={e => { e.stopPropagation(); setSlideIdx(i) }}
+                    style={{
+                      width: i === slideIdx ? 16 : 6, height: 6, borderRadius: 3,
+                      background: i === slideIdx ? '#C9A96E' : 'rgba(255,255,255,0.45)',
+                      border: 'none', padding: 0, cursor: 'pointer',
+                      transition: 'width 0.2s, background 0.2s',
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: 'var(--card)' }} />
         )}
-        <div style={{ position: 'absolute', inset: 0, background: 'var(--img-overlay)' }} />
+
+        <div style={{ position: 'absolute', inset: 0, background: 'var(--img-overlay)', pointerEvents: 'none' }} />
 
         {c.tax_refund && (
           <div style={{

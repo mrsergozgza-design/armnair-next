@@ -65,8 +65,8 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
         </div>
       </button>
 
-      {/* Center nav */}
-      <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
+      {/* Center nav — hidden on mobile (tab bar handles navigation) */}
+      <div className="nav-center" style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
         {navLinks.map(link => {
           const active = activePage === link.page
           return (
@@ -105,8 +105,8 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
 
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        {/* Search */}
-        <button
+        {/* Search — hidden on mobile */}
+        <button className="nav-right-extra"
           onClick={() => {
             const el = document.getElementById('filter-search-input')
             if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus() }
@@ -122,9 +122,9 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
           <Search size={15} />
         </button>
 
-        {/* Compare button */}
+        {/* Compare button — hidden on mobile (tab bar) */}
         {compareCount > 0 && (
-          <button
+          <button className="nav-right-extra"
             onClick={onOpenCompare}
             title="Открыть сравнение"
             style={{
@@ -146,8 +146,8 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
           </button>
         )}
 
-        {/* Favorites filter */}
-        <button
+        {/* Favorites filter — hidden on mobile (tab bar) */}
+        <button className="nav-right-extra"
           onClick={onFavFilter}
           title={favOnly ? 'Показать все объекты' : 'Показать только избранное'}
           style={{
@@ -193,8 +193,8 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
           {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
         </button>
 
-        {/* Consultation dropdown */}
-        <div ref={dropRef} style={{ position: 'relative' }}>
+        {/* Consultation dropdown — hidden on mobile */}
+        <div className="nav-right-extra" ref={dropRef} style={{ position: 'relative' }}>
           <button
             onClick={() => setConsultOpen(v => !v)}
             style={{

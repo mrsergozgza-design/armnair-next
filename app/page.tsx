@@ -14,6 +14,7 @@ import ConsultModal from '@/components/ConsultModal'
 import ComparisonModal from '@/components/ComparisonModal'
 import AnalyticsPage from '@/components/analytics/AnalyticsPage'
 import CatalogPage from '@/components/CatalogPage'
+import MobileTabBar from '@/components/MobileTabBar'
 
 interface Filters {
   district: string; developer: string; price: number
@@ -31,6 +32,8 @@ export default function Home() {
   const [page, setPage]         = useState<'home' | 'analytics' | 'catalog'>('home')
   const [favOnly, setFavOnly]       = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
+  const [collectionMode, setCollectionMode] = useState(false)
+  const [collectionIds, setCollectionIds]   = useState<string[]>([])
   const { favorites, toggle: toggleFav, count: favCount } = useFavorites()
   const { compareIds, toggle: toggleCompare, remove: removeCompare, clear: clearCompare, count: compareCount } = useCompare()
 
@@ -41,20 +44,51 @@ export default function Home() {
       .catch(() => setData(FALLBACK))
   }, [])
 
-  const filtered = useMemo(() => data.filter(c => {
-    if (favOnly && !favorites.has(c.id)) return false
-    if (filters.district  && c.district  !== filters.district)  return false
-    if (filters.developer && c.developer !== filters.developer) return false
-    if (c.price_usd > filters.price)                            return false
-    if (filters.tax === 'yes' && !c.tax_refund)                 return false
-    if (filters.tax === 'no'  &&  c.tax_refund)                 return false
-    if (filters.status && c.status !== filters.status)          return false
-    if (filters.search) {
-      const hay = (c.name + ' ' + c.district + ' ' + c.developer).toLowerCase()
-      if (!hay.includes(filters.search.toLowerCase())) return false
+  // Detect ?ids=... in URL → collection mode
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const ids = params.get('ids')
+    if (ids) {
+      const idList = ids.split(',').filter(Boolean)
+      setCollectionIds(idList)
+      setCollectionMode(true)
     }
-    return true
-  }), [data, filters, favOnly, favorites])
+  }, [])
+
+  const exitCollectionMode = () => {
+    setCollectionMode(false)
+    setCollectionIds([])
+    window.history.replaceState({}, '', window.location.pathname)
+  }
+
+  const handleShareFavorites = () => {
+    const ids = Array.from(favorites).join(',')
+    if (!ids) return
+    const shareUrl = `${window.location.origin}/?ids=${ids}`
+    const text = `Здравствуйте! Подготовил для вас персональную подборку объектов в ArmNair:\n${shareUrl}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+  }
+
+  const filtered = useMemo(() => {
+    // Collection mode: show only the IDs from the share link
+    if (collectionMode && collectionIds.length > 0) {
+      return data.filter(c => collectionIds.includes(c.id))
+    }
+    return data.filter(c => {
+      if (favOnly && !favorites.has(c.id)) return false
+      if (filters.district  && c.district  !== filters.district)  return false
+      if (filters.developer && c.developer !== filters.developer) return false
+      if (c.price_usd > filters.price)                            return false
+      if (filters.tax === 'yes' && !c.tax_refund)                 return false
+      if (filters.tax === 'no'  &&  c.tax_refund)                 return false
+      if (filters.status && c.status !== filters.status)          return false
+      if (filters.search) {
+        const hay = (c.name + ' ' + c.district + ' ' + c.developer).toLowerCase()
+        if (!hay.includes(filters.search.toLowerCase())) return false
+      }
+      return true
+    })
+  }, [data, filters, favOnly, favorites, collectionMode, collectionIds])
 
   const selectedComplex = useMemo(
     () => selectedId ? (data.find(c => c.id === selectedId) ?? null) : null,
@@ -74,16 +108,50 @@ export default function Home() {
   return (
     <>
       <Navbar activePage={page} onNav={handleNav} favCount={favCount} favOnly={favOnly} onFavFilter={() => setFavOnly(v => !v)} compareCount={compareCount} onOpenCompare={() => setCompareOpen(true)} />
+      <MobileTabBar activePage={page} onNav={handleNav} favCount={favCount} favOnly={favOnly} onFavFilter={() => setFavOnly(v => !v)} compareCount={compareCount} onOpenCompare={() => setCompareOpen(true)} />
+
+      {/* Collection mode banner */}
+      {collectionMode && (
+        <div style={{
+          position: 'sticky', top: 64, zIndex: 900,
+          background: 'linear-gradient(90deg, rgba(160,120,32,0.18) 0%, rgba(160,120,32,0.08) 100%)',
+          borderBottom: '1px solid rgba(160,120,32,0.35)',
+          padding: '0.6rem 2rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          backdropFilter: 'blur(12px)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ color: '#C9A96E', fontSize: '0.9rem' }}>✦</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#C9A96E', letterSpacing: '0.1em' }}>
+              ВАША ПЕРСОНАЛЬНАЯ ПОДБОРКА · {collectionIds.length} {collectionIds.length === 1 ? 'объект' : 'объектов'}
+            </span>
+          </div>
+          <button
+            onClick={exitCollectionMode}
+            style={{
+              background: 'none', border: '1px solid rgba(160,120,32,0.35)',
+              color: 'var(--t3)', cursor: 'pointer',
+              fontFamily: 'var(--font-mono)', fontSize: '0.58rem', letterSpacing: '0.08em',
+              padding: '3px 10px', borderRadius: 2,
+              transition: 'all 0.2s', flexShrink: 0,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#C9A96E'; e.currentTarget.style.borderColor = '#C9A96E' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.borderColor = 'rgba(160,120,32,0.35)' }}
+          >
+            СМОТРЕТЬ ВСЕ
+          </button>
+        </div>
+      )}
 
       {page === 'analytics'
         ? <AnalyticsPage data={data} onOpenModal={setSelectedId} onBack={() => setPage('home')} />
         : page === 'catalog'
-        ? <CatalogPage data={data} onOpenModal={setSelectedId} onBack={() => setPage('home')} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} />
+        ? <CatalogPage data={data} onOpenModal={setSelectedId} onBack={() => setPage('home')} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} />
         : <>
             <Hero />
             <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />
             <StatsRow data={data} />
-            <SplitPanel id="split-panel" complexes={filtered} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} />
+            <SplitPanel id="split-panel" complexes={filtered} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} />
             <footer style={{
               borderTop:'1px solid var(--border-c)',
               background:'var(--bg)',
