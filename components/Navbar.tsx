@@ -14,7 +14,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ activePage, onNav, favCount = 0, favOnly = false, onFavFilter, compareCount = 0, onOpenCompare }: NavbarProps) {
-  const { theme, toggle } = useTheme()
+  const { theme, toggle, mounted } = useTheme()
   const [consultOpen, setConsultOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
 
@@ -173,7 +173,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
         {/* Theme toggle */}
         <button
           onClick={toggle}
-          title={theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
+          title={!mounted ? 'Тёмная тема' : theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
           style={{
             background: 'none', border: '1px solid var(--border-c)', borderRadius: 100,
             cursor: 'pointer', color: 'var(--t3)',
@@ -190,7 +190,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
             e.currentTarget.style.color = 'var(--t3)'
           }}
         >
-          {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+          {!mounted ? <Moon size={14} /> : theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
         </button>
 
         {/* Consultation dropdown — hidden on mobile */}

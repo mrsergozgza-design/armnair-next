@@ -18,4 +18,6 @@ export interface Complex {
   commission?: string;        // Commission, %
   contact?: string;           // контактное лицо (почта, тел)
   website?: string;           // Сайт, ссылка
+  developer_logo?: string;    // Developer_Logo — URL логотипа застройщика
+  developer_description?: string; // Developer_Description — описание застройщика
 }

@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { X, Download, TrendingUp, Phone, MessageCircle, Heart, GitCompare, ChevronLeft, ChevronRight } from 'lucide-react'
+import { X, Download, TrendingUp, Phone, MessageCircle, Heart, GitCompare, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Train, Trees, GraduationCap, ShoppingBag, Building2, Dumbbell, MapPin, Utensils, Car } from 'lucide-react'
 import { Complex } from '@/lib/types'
 import { fmtAmd, fmtDate, statusStyle, parseYield, priceGrowth } from '@/lib/utils'
 import { useTheme } from './ThemeProvider'
@@ -37,6 +37,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   const [mounted, setMounted] = useState(false)
   const [heartAnim, setHeartAnim] = useState(false)
   const [heroIdx, setHeroIdx] = useState(0)
+  const [developerExpanded, setDeveloperExpanded] = useState(false)
 
   // Drag-to-close (mobile)
   const [dragY, setDragY] = useState(0)
@@ -46,6 +47,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   useEffect(() => {
     if (c) {
       setMounted(true)
+      setDeveloperExpanded(false)
       document.body.classList.add('modal-open')
     } else {
       setMounted(false)
@@ -108,6 +110,46 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
       y: { grid: { color: 'rgba(160,120,32,0.1)' }, ticks: { color: 'var(--tm)', font: { family: 'DM Mono', size: 10 } } },
     },
   }
+
+  // ── Payment Plan parsing ──────────────────────────────────────────────
+  const paymentSegments = (() => {
+    if (!c.payment_plan) return []
+    const nums = c.payment_plan.split(/[\/\-\+,]/).map(s => parseInt(s.replace(/[^0-9]/g, ''))).filter(n => !isNaN(n) && n > 0)
+    if (!nums.length) return []
+    const total = nums.reduce((a, b) => a + b, 0)
+    return nums.map(n => ({ value: n, pct: Math.round(n / total * 100) }))
+  })()
+  const PAY_LABELS = [['Взнос', 'Остаток'], ['Бронирование', 'Строительство', 'Сдача'], ['Бронирование', '1-й этап', '2-й этап', 'Сдача']]
+  const payLabels = PAY_LABELS[paymentSegments.length - 2] ?? paymentSegments.map((_, i) => `Этап ${i + 1}`)
+  const PAY_COLORS = ['#C9A96E', '#A07820', '#7A5C10', '#5A4508']
+  const PAY_BG     = ['rgba(201,169,110,0.12)', 'rgba(160,120,32,0.1)', 'rgba(122,92,16,0.08)', 'rgba(90,69,8,0.07)']
+
+  // ── Infrastructure parsing ────────────────────────────────────────────
+  type InfraIcon = { node: React.ReactNode; label: string; time?: string }
+  const infraItems: InfraIcon[] = (() => {
+    if (!c.infrastructure) return []
+    const KW: Array<{ keys: string[]; icon: React.ReactNode; label: string }> = [
+      { keys: ['metro','subway','метро','подземка'],        icon: <Train size={14} />,       label: 'Метро' },
+      { keys: ['park','парк','сквер','garden','сад'],       icon: <Trees size={14} />,       label: 'Парк' },
+      { keys: ['school','школа','kindergarten','детск'],    icon: <GraduationCap size={14} />, label: 'Школа' },
+      { keys: ['mall','тц','торгов','shopping','market'],   icon: <ShoppingBag size={14} />, label: 'ТЦ' },
+      { keys: ['university','универ','вуз','college'],      icon: <Building2 size={14} />,   label: 'Универ.' },
+      { keys: ['gym','fitness','фитнес','спорт'],           icon: <Dumbbell size={14} />,    label: 'Фитнес' },
+      { keys: ['restaurant','кафе','cafe','еда','food'],    icon: <Utensils size={14} />,    label: 'Ресторан' },
+    ]
+    return c.infrastructure.split(',').map(s => s.trim()).filter(Boolean).map(part => {
+      // Format: "metro:20m" or "metro: 20 min" or just "metro"
+      const colonIdx = part.indexOf(':')
+      const keyword = (colonIdx !== -1 ? part.slice(0, colonIdx) : part).trim().toLowerCase()
+      const rawTime = colonIdx !== -1 ? part.slice(colonIdx + 1).trim() : undefined
+      // Normalize time: "20m" → "20 мин", "20min" → "20 мин", "20 мин" → "20 мин", bare number → "N мин"
+      const time = rawTime
+        ? rawTime.replace(/^(\d+)\s*(?:min|мин|m)$/i, '$1 мин').replace(/^(\d+)$/, '$1 мин')
+        : undefined
+      const match = KW.find(kw => kw.keys.some(k => keyword.includes(k)))
+      return { node: match?.icon ?? <MapPin size={14} />, label: match?.label ?? part.replace(/:.*$/, '').trim(), time }
+    })
+  })()
 
   const metrics = [
     { label: '$/м²',       value: `$${c.price_usd.toLocaleString()}` },
@@ -434,15 +476,13 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                 ))}
               </div>
 
-              {(c.unit_type || c.min_area || c.payment_plan || c.subway_station || c.infrastructure || c.commission || c.contact || c.website) && (
+              {(c.unit_type || c.min_area || c.subway_station || c.commission || c.contact || c.website) && (
                 <div style={{ marginBottom: '1.5rem' }}>
                   <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 8, textTransform: 'uppercase' }}>Характеристики</h4>
                   {[
                     c.unit_type      && { label: 'Тип объекта',    value: c.unit_type },
                     c.min_area       && { label: 'Мин. площадь',   value: `${c.min_area} м²` },
-                    c.payment_plan   && { label: 'Payment Plan',   value: c.payment_plan },
                     c.subway_station && { label: 'Метро',          value: c.subway_station },
-                    c.infrastructure && { label: 'Инфраструктура', value: c.infrastructure },
                     c.commission     && { label: 'Комиссия',       value: `${c.commission}%` },
                     c.contact        && { label: 'Контакт',        value: c.contact },
                   ].filter(Boolean).map((row, i) => {
@@ -463,6 +503,41 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                       </a>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* ── Payment Plan block ── */}
+              {paymentSegments.length >= 2 && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 12, textTransform: 'uppercase' }}>
+                    Payment Plan
+                  </h4>
+                  {/* Segmented bar */}
+                  <div style={{ display: 'flex', height: 6, borderRadius: 3, overflow: 'hidden', gap: 2, marginBottom: 10 }}>
+                    {paymentSegments.map((seg, i) => (
+                      <div key={i} style={{ flex: seg.value, background: PAY_COLORS[i % PAY_COLORS.length], transition: 'flex 0.4s ease' }} />
+                    ))}
+                  </div>
+                  {/* Segment cards */}
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {paymentSegments.map((seg, i) => (
+                      <div key={i} style={{
+                        flex: '1 1 60px',
+                        background: PAY_BG[i % PAY_BG.length],
+                        border: `1px solid ${PAY_COLORS[i % PAY_COLORS.length]}30`,
+                        borderRadius: 6, padding: '7px 10px',
+                        display: 'flex', flexDirection: 'column', gap: 2,
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <div style={{ width: 6, height: 6, borderRadius: '50%', background: PAY_COLORS[i % PAY_COLORS.length], flexShrink: 0 }} />
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: PAY_COLORS[i % PAY_COLORS.length], fontWeight: 600 }}>{seg.value}%</span>
+                        </div>
+                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.56rem', color: 'var(--tm)', letterSpacing: '0.06em' }}>
+                          {payLabels[i] ?? `Этап ${i + 1}`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -560,6 +635,79 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                 style={{ height: 180, marginBottom: '1.5rem', border: '1px solid rgba(139,105,20,0.15)', overflow: 'hidden', cursor: 'pointer' }}>
                 <MiniMap lat={c.lat} lng={c.lng} name={c.name} theme={theme} />
               </div>
+
+              {/* ── Developer block ── */}
+              {(c.developer_logo || c.developer_description) && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>
+                    О застройщике
+                  </h4>
+                  <div style={{ background: 'var(--card)', border: '1px solid rgba(139,105,20,0.12)', borderRadius: 8, padding: '0.9rem 1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: c.developer_description ? 10 : 0 }}>
+                      {c.developer_logo && (
+                        <img
+                          src={c.developer_logo} alt={c.developer}
+                          style={{ width: 44, height: 44, objectFit: 'contain', borderRadius: 6, background: 'rgba(255,255,255,0.06)', padding: 4, flexShrink: 0 }}
+                        />
+                      )}
+                      <div>
+                        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 400, color: 'var(--t1)', lineHeight: 1.2 }}>{c.developer}</div>
+                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.57rem', color: 'var(--tm)', letterSpacing: '0.08em', marginTop: 3 }}>ЗАСТРОЙЩИК</div>
+                      </div>
+                    </div>
+                    {c.developer_description && (() => {
+                      const MAX = 180
+                      const isLong = c.developer_description.length > MAX
+                      return (
+                        <div>
+                          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.82rem', color: 'var(--t3)', lineHeight: 1.65, margin: 0 }}>
+                            {developerExpanded || !isLong ? c.developer_description : c.developer_description.slice(0, MAX) + '…'}
+                          </p>
+                          {isLong && (
+                            <button
+                              onClick={() => setDeveloperExpanded(v => !v)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#A07820', letterSpacing: '0.08em', marginTop: 7, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+                            >
+                              {developerExpanded ? 'СВЕРНУТЬ' : 'ЧИТАТЬ ДАЛЕЕ'}
+                              {developerExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Infrastructure block ── */}
+              {infraItems.length > 0 && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>
+                    Инфраструктура рядом
+                  </h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                    {infraItems.map((item, i) => (
+                      <div key={i} style={{
+                        display: 'flex', alignItems: 'center', gap: 7,
+                        background: 'var(--card)',
+                        border: '1px solid rgba(139,105,20,0.12)',
+                        borderRadius: 6, padding: '6px 11px',
+                      }}>
+                        <span style={{ color: '#A07820', flexShrink: 0, display: 'flex' }}>{item.node}</span>
+                        <div>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--t2)', lineHeight: 1 }}>{item.label}</div>
+                          {item.time && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 3 }}>
+                              <Car size={11} color="var(--tm)" />
+                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.54rem', color: 'var(--tm)' }}>{item.time}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* CTA buttons — desktop only here; mobile gets sticky footer */}
               {!isMobile && (

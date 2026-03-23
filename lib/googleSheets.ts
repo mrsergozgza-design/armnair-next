@@ -134,7 +134,17 @@ function rowToComplex(row: Record<string, string>): Complex | null {
     image:        firstImage,
     images:       images.length > 0 ? images        : undefined,
     media_folder: mediaFolder,
-    // Extended fields not in this sheet — undefined by default
+    // Extended fields
+    unit_type:    row['unit_type']?.trim()          || undefined,
+    min_area:     row['min_area']?.trim()           || undefined,
+    payment_plan: row['payment_plan']?.trim()       || undefined,
+    subway_station: row['subway_station']?.trim()   || undefined,
+    infrastructure: row['infrastructure']?.trim()   || undefined,
+    commission:   row['commission']?.trim()         || undefined,
+    contact:      row['contact']?.trim()            || undefined,
+    website:      row['website']?.trim()            || undefined,
+    developer_logo:        row['developer_logo']?.trim()        || undefined,
+    developer_description: row['developer_description']?.trim() || undefined,
   }
 }
 

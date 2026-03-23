@@ -44,10 +44,10 @@ export default function Home() {
       .catch(() => setData(FALLBACK))
   }, [])
 
-  // Detect ?ids=... in URL → collection mode
+  // Detect ?shared=... in URL → collection mode
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const ids = params.get('ids')
+    const ids = params.get('shared')
     if (ids) {
       const idList = ids.split(',').filter(Boolean)
       setCollectionIds(idList)
@@ -64,8 +64,8 @@ export default function Home() {
   const handleShareFavorites = () => {
     const ids = Array.from(favorites).join(',')
     if (!ids) return
-    const shareUrl = `${window.location.origin}/?ids=${ids}`
-    const text = `Здравствуйте! Подготовил для вас персональную подборку объектов в ArmNair:\n${shareUrl}`
+    const shareUrl = `${window.location.origin}/?shared=${ids}`
+    const text = `Здравствуйте! Специально для вас подготовлена персональная подборка объектов недвижимости в Ереване от ArmNair:\n${shareUrl}`
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
   }
 
@@ -123,7 +123,7 @@ export default function Home() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ color: '#C9A96E', fontSize: '0.9rem' }}>✦</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#C9A96E', letterSpacing: '0.1em' }}>
-              ВАША ПЕРСОНАЛЬНАЯ ПОДБОРКА · {collectionIds.length} {collectionIds.length === 1 ? 'объект' : 'объектов'}
+              ВАША ПЕРСОНАЛЬНАЯ ПОДБОРКА ОТ ARMNAIR · {collectionIds.length} {collectionIds.length === 1 ? 'объект' : collectionIds.length < 5 ? 'объекта' : 'объектов'}
             </span>
           </div>
           <button
@@ -180,7 +180,12 @@ export default function Home() {
         onOpenMap={(id: string) => {
           setSelectedId(null)
           setMapFocusId(id)
-          setTimeout(() => document.getElementById('right-panel')?.scrollIntoView({ behavior:'smooth' }), 100)
+          if (page !== 'home') {
+            setPage('home')
+            setTimeout(() => document.getElementById('right-panel')?.scrollIntoView({ behavior:'smooth' }), 250)
+          } else {
+            setTimeout(() => document.getElementById('right-panel')?.scrollIntoView({ behavior:'smooth' }), 100)
+          }
         }}
       />
       <ConsultModal open={consultOpen} onClose={() => setConsultOpen(false)} />
