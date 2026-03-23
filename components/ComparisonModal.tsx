@@ -183,10 +183,22 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
             <button
               onClick={onClose}
               style={{
-                background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(139,105,20,0.2)',
+                background: 'var(--card)',
+                border: '1px solid var(--border-c)',
                 borderRadius: '50%', width: 30, height: 30,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: '#C9A96E',
+                cursor: 'pointer', color: 'var(--t3)',
+                transition: 'background 0.2s, color 0.2s, border-color 0.2s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(160,120,32,0.12)'
+                e.currentTarget.style.color = '#C9A96E'
+                e.currentTarget.style.borderColor = 'rgba(160,120,32,0.4)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'var(--card)'
+                e.currentTarget.style.color = 'var(--t3)'
+                e.currentTarget.style.borderColor = 'var(--border-c)'
               }}
             >
               <X size={14} />
