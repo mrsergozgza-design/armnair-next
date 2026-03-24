@@ -7,6 +7,7 @@ import L from 'leaflet'
 import { Complex } from '@/lib/types'
 import { statusStyle } from '@/lib/utils'
 import { ArrowRight } from 'lucide-react'
+import { useT, useTStatus } from '@/lib/StaticTranslationProvider'
 
 // Fix default icon paths
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
@@ -81,6 +82,8 @@ interface Props {
 }
 
 export default function MapPanel({ complexes, onMarkerClick, theme = 'light', hoveredId, mapFocusId, onMapFocusDone }: Props) {
+  const tr = useT()
+  const tStatus = useTStatus()
   const markerRefs = useRef<Map<string, L.Marker>>(new Map())
   const tileUrl = theme === 'dark'
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
@@ -132,7 +135,7 @@ export default function MapPanel({ complexes, onMarkerClick, theme = 'light', ho
                       fontFamily:'var(--font-mono)', fontSize:'0.52rem',
                       background:ss.bg, border:`1px solid ${ss.border}`,
                       color:ss.color, padding:'1px 5px', borderRadius:2,
-                    }}>{c.status}</span>
+                    }}>{tStatus(c.status)}</span>
                   </div>
                   <button onClick={() => onMarkerClick(c.id)} style={{
                     width:'100%', background:'rgba(160,120,32,0.1)', border:'1px solid rgba(160,120,32,0.28)',
@@ -144,7 +147,7 @@ export default function MapPanel({ complexes, onMarkerClick, theme = 'light', ho
                     onMouseEnter={e => (e.currentTarget.style.background = 'rgba(160,120,32,0.18)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'rgba(160,120,32,0.1)')}
                   >
-                    Подробнее <ArrowRight size={11} />
+                    {tr('map.details')} <ArrowRight size={11} />
                   </button>
                 </div>
               </div>

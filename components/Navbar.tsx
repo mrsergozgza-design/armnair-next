@@ -1,7 +1,9 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { Search, Phone, MessageCircle, Send, Sun, Moon, Heart, GitCompare } from 'lucide-react'
+import { Search, Phone, MessageCircle, Send, Sun, Moon, Heart, GitCompare, Globe } from 'lucide-react'
 import { useTheme } from './ThemeProvider'
+import { useLang, type Lang } from '@/lib/LanguageContext'
+import { useT } from '@/lib/StaticTranslationProvider'
 
 interface NavbarProps {
   activePage: 'home' | 'analytics' | 'catalog'
@@ -13,8 +15,16 @@ interface NavbarProps {
   onOpenCompare?: () => void
 }
 
+const LANGS: { code: Lang; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'ru', label: 'RU' },
+  { code: 'am', label: 'ՀԱ' },
+]
+
 export default function Navbar({ activePage, onNav, favCount = 0, favOnly = false, onFavFilter, compareCount = 0, onOpenCompare }: NavbarProps) {
   const { theme, toggle, mounted } = useTheme()
+  const { lang, setLang } = useLang()
+  const tr = useT()
   const [consultOpen, setConsultOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
 
@@ -28,10 +38,10 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  const navLinks: { label: string; page: 'home' | 'analytics' | 'catalog'; anchor?: string }[] = [
-    { label: 'ГЛАВНАЯ',    page: 'home' },
-    { label: 'КАТАЛОГ',    page: 'catalog' },
-    { label: 'АНАЛИТИКА',  page: 'analytics' },
+  const navLinks: { key: 'nav.home' | 'nav.catalog' | 'nav.analytics'; page: 'home' | 'analytics' | 'catalog' }[] = [
+    { key: 'nav.home',      page: 'home' },
+    { key: 'nav.catalog',   page: 'catalog' },
+    { key: 'nav.analytics', page: 'analytics' },
   ]
 
   return (
@@ -60,7 +70,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
             ArmNair
           </span>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.54rem', color: 'var(--gold)', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 2 }}>
-            Ереван · Армения
+            {tr('nav.yerevan')}
           </span>
         </div>
       </button>
@@ -71,12 +81,12 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
           const active = activePage === link.page
           return (
             <button
-              key={link.label}
+              key={link.page}
               onClick={() => {
                 if (activePage === link.page) {
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 } else {
-                  onNav(link.page, link.anchor)
+                  onNav(link.page)
                 }
               }}
               style={{
@@ -90,7 +100,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--gold)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = active ? 'var(--gold)' : 'var(--t3)' }}
             >
-              {link.label}
+              {tr(link.key)}
               <span style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0, height: 1,
                 background: 'var(--gold)',
@@ -122,11 +132,55 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
           <Search size={15} />
         </button>
 
+        {/* Language switcher */}
+        <div className="nav-right-extra" style={{
+          display: 'flex', alignItems: 'center', gap: 3,
+          background: 'rgba(160,120,32,0.06)',
+          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          border: '1px solid rgba(160,120,32,0.3)',
+          borderRadius: 100,
+          padding: '3px 6px 3px 8px',
+        }}>
+          <Globe size={12} color="var(--gold)" style={{ flexShrink: 0 }} />
+          {LANGS.map(({ code, label }) => (
+            <button
+              key={code}
+              onClick={() => setLang(code)}
+              style={{
+                background: lang === code ? 'rgba(160,120,32,0.25)' : 'transparent',
+                border: lang === code ? '1px solid rgba(201,169,110,0.5)' : '1px solid transparent',
+                borderRadius: 100,
+                cursor: 'pointer',
+                fontFamily: lang === code && code === 'am' ? 'var(--font-armenian)' : 'var(--font-mono)',
+                fontSize: '0.62rem',
+                letterSpacing: '0.06em',
+                color: lang === code ? 'var(--gold)' : 'var(--t3)',
+                padding: '3px 8px',
+                transition: 'all 0.2s',
+                lineHeight: 1,
+              }}
+              onMouseEnter={e => {
+                if (lang !== code) {
+                  e.currentTarget.style.color = 'var(--gold)'
+                  e.currentTarget.style.background = 'rgba(160,120,32,0.1)'
+                }
+              }}
+              onMouseLeave={e => {
+                if (lang !== code) {
+                  e.currentTarget.style.color = 'var(--t3)'
+                  e.currentTarget.style.background = 'transparent'
+                }
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* Compare button — hidden on mobile (tab bar) */}
         {compareCount > 0 && (
           <button className="nav-right-extra"
             onClick={onOpenCompare}
-            title="Открыть сравнение"
             style={{
               background: 'rgba(160,120,32,0.12)',
               border: '1px solid rgba(160,120,32,0.4)',
@@ -149,7 +203,6 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
         {/* Favorites filter — hidden on mobile (tab bar) */}
         <button className="nav-right-extra"
           onClick={onFavFilter}
-          title={favOnly ? 'Показать все объекты' : 'Показать только избранное'}
           style={{
             background: favOnly ? 'rgba(201,169,110,0.15)' : 'none',
             border: favOnly ? '1px solid rgba(201,169,110,0.4)' : 'none',
@@ -173,7 +226,6 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
         {/* Theme toggle */}
         <button
           onClick={toggle}
-          title={!mounted ? 'Тёмная тема' : theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
           style={{
             background: 'none', border: '1px solid var(--border-c)', borderRadius: 100,
             cursor: 'pointer', color: 'var(--t3)',
@@ -208,7 +260,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
             onMouseEnter={e => (e.currentTarget.style.background = 'rgba(160,120,32,0.14)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'rgba(160,120,32,0.07)')}
           >
-            КОНСУЛЬТАЦИЯ
+            {tr('nav.consult')}
           </button>
 
           {consultOpen && (
@@ -225,7 +277,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
               {[
                 { href:'https://wa.me/971528892559', icon:<MessageCircle size={14} color="#25D366"/>, label:'WhatsApp', detail:'+971 52 889 2559' },
                 { href:'https://t.me/NazaryanDubai', icon:<Send size={14} color="#2AABEE"/>, label:'Telegram', detail:'@NazaryanDubai' },
-                { href:'tel:+37494108303', icon:<Phone size={14} color="var(--gold)"/>, label:'Телефон', detail:'+374 94 108 303' },
+                { href:'tel:+37494108303', icon:<Phone size={14} color="var(--gold)"/>, label: tr('contact.phone'), detail:'+374 94 108 303' },
               ].map(({ href, icon, label, detail }) => (
                 <a key={label} href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"
                   style={{ display:'flex', alignItems:'center', gap:10, padding:'0.5rem 0.5rem', color:'var(--t1)', textDecoration:'none', borderRadius:4, fontSize:'0.88rem', transition:'background 0.15s' }}

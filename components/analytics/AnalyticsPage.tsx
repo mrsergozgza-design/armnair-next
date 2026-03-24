@@ -8,6 +8,7 @@ import { Bar } from 'react-chartjs-2'
 import { Complex } from '@/lib/types'
 import { fmtAmd, statusStyle, parseYield } from '@/lib/utils'
 import { ArrowRight, TrendingUp } from 'lucide-react'
+import { useT, useTStatus } from '@/lib/StaticTranslationProvider'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
@@ -18,17 +19,19 @@ interface AnalyticsPageProps {
 }
 
 export default function AnalyticsPage({ data, onOpenModal, onBack }: AnalyticsPageProps) {
+  const tr = useT()
+  const tStatus = useTStatus()
   const minPrice = data.length ? Math.min(...data.map(c => c.price_usd)) : 0
   const maxPrice = data.length ? Math.max(...data.map(c => c.price_usd)) : 0
   const avgPrice = data.length ? Math.round(data.reduce((a, c) => a + c.price_usd, 0) / data.length) : 0
   const taxCount = data.filter(c => c.tax_refund).length
 
   const kpis = [
-    { label: 'Всего объектов', value: String(data.length) },
-    { label: 'Мин. цена/м²', value: `$${minPrice.toLocaleString()}` },
-    { label: 'Средняя цена/м²', value: `$${avgPrice.toLocaleString()}` },
-    { label: 'Макс. цена/м²', value: `$${maxPrice.toLocaleString()}` },
-    { label: 'Возврат налога', value: String(taxCount) },
+    { label: tr('analytics.totalObj'),  value: String(data.length) },
+    { label: tr('analytics.minPrice'),  value: `$${minPrice.toLocaleString()}` },
+    { label: tr('analytics.avgPrice'),  value: `$${avgPrice.toLocaleString()}` },
+    { label: tr('analytics.maxPrice'),  value: `$${maxPrice.toLocaleString()}` },
+    { label: tr('analytics.taxRefund'), value: String(taxCount) },
   ]
 
   // District avg price data
@@ -47,7 +50,7 @@ export default function AnalyticsPage({ data, onOpenModal, onBack }: AnalyticsPa
   const barChartData = {
     labels: districtData.map(d => d.district),
     datasets: [{
-      label: 'Средняя цена ($)',
+      label: tr('analytics.avgPriceChart'),
       data: districtData.map(d => d.avg),
       backgroundColor: 'rgba(160,120,32,0.4)',
       borderColor: '#A07820',
@@ -91,14 +94,14 @@ export default function AnalyticsPage({ data, onOpenModal, onBack }: AnalyticsPa
               onMouseEnter={e => (e.currentTarget.style.color = '#C9A96E')}
               onMouseLeave={e => (e.currentTarget.style.color = 'var(--t3)')}
             >
-              ← Главная
+              {tr('analytics.home')}
             </button>
             <span style={{ color: 'var(--tm)' }}>/</span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#A07820' }}>Аналитика</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#A07820' }}>{tr('analytics.title')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.8rem', fontWeight: 300, color: 'var(--t1)', margin: 0 }}>
-              Аналитика рынка
+              {tr('analytics.title')}
             </h1>
             <div style={{
               display: 'flex', alignItems: 'center', gap: 5,
@@ -107,11 +110,11 @@ export default function AnalyticsPage({ data, onOpenModal, onBack }: AnalyticsPa
               fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#2A9D8F',
             }}>
               <TrendingUp size={10} />
-              Рынок активен
+              {tr('analytics.subtitle')}
             </div>
           </div>
           <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--t3)', fontSize: '0.9rem', margin: '8px 0 0 0' }}>
-            Ереван · {data.length} объектов · обновлено в реальном времени
+            {tr('filter.city')} · {data.length} {tr('analytics.totalObj').toLowerCase()}
           </p>
         </div>
 
@@ -136,7 +139,7 @@ export default function AnalyticsPage({ data, onOpenModal, onBack }: AnalyticsPa
           {/* Bar chart */}
           <div style={{ background: 'var(--card)', border: '1px solid rgba(139,105,20,0.1)', padding: '1.25rem', borderRadius: 2 }}>
             <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t3)', letterSpacing: '0.1em', margin: '0 0 1rem 0', textTransform: 'uppercase' }}>
-              Средняя цена по районам
+              {tr('analytics.byDistrict')}
             </h3>
             <div style={{ height: 220 }}>
               <Bar data={barChartData} options={barOptions as never} />
@@ -146,7 +149,7 @@ export default function AnalyticsPage({ data, onOpenModal, onBack }: AnalyticsPa
           {/* Top ROI */}
           <div style={{ background: 'var(--card)', border: '1px solid rgba(139,105,20,0.1)', padding: '1.25rem', borderRadius: 2 }}>
             <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t3)', letterSpacing: '0.1em', margin: '0 0 1rem 0', textTransform: 'uppercase' }}>
-              Топ-3 по доходности
+              {tr('analytics.topROI')}
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {topROI.map((c, i) => {
@@ -180,14 +183,14 @@ export default function AnalyticsPage({ data, onOpenModal, onBack }: AnalyticsPa
         <div style={{ background: 'var(--card)', border: '1px solid rgba(139,105,20,0.1)', borderRadius: 2, overflow: 'hidden' }}>
           <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(139,105,20,0.08)' }}>
             <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t3)', letterSpacing: '0.1em', margin: 0, textTransform: 'uppercase' }}>
-              Все объекты
+              {tr('analytics.totalObj')}
             </h3>
           </div>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(139,105,20,0.1)' }}>
-                  {['Объект', 'Застройщик', 'Район', '$/м²', '֏/м²', 'Доходность', 'Статус', 'Возврат налога', ''].map(h => (
+                  {[tr('compare.priceUSD').replace(' ($/м²)',''), tr('modal.developer'), tr('modal.district'), '$/м²', '֏/м²', tr('compare.yield'), tr('modal.status'), tr('modal.taxRefund'), ''].map(h => (
                     <th key={h} style={{
                       padding: '0.7rem 1rem', textAlign: 'left',
                       fontFamily: 'var(--font-mono)', fontSize: '0.58rem',
@@ -220,11 +223,11 @@ export default function AnalyticsPage({ data, onOpenModal, onBack }: AnalyticsPa
                       <td style={{ padding: '0.8rem 1rem', fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#2A9D8F' }}>{c.yield}</td>
                       <td style={{ padding: '0.8rem 1rem' }}>
                         <span style={{ background: ss.bg, border: `1px solid ${ss.border}`, color: ss.color, borderRadius: 2, padding: '2px 7px', fontFamily: 'var(--font-mono)', fontSize: '0.58rem', whiteSpace: 'nowrap' }}>
-                          {c.status}
+                          {tStatus(c.status)}
                         </span>
                       </td>
                       <td style={{ padding: '0.8rem 1rem', fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: c.tax_refund ? '#2A9D8F' : '#555560' }}>
-                        {c.tax_refund ? 'Да' : 'Нет'}
+                        {c.tax_refund ? tr('modal.yes') : tr('modal.no')}
                       </td>
                       <td style={{ padding: '0.8rem 1rem' }}>
                         <ArrowRight size={13} color="#A07820" />

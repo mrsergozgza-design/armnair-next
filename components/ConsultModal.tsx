@@ -1,6 +1,7 @@
 'use client'
 import { useEffect } from 'react'
 import { X, Phone, MessageCircle, Send } from 'lucide-react'
+import { useT } from '@/lib/StaticTranslationProvider'
 
 interface ConsultModalProps {
   open: boolean
@@ -8,6 +9,8 @@ interface ConsultModalProps {
 }
 
 export default function ConsultModal({ open, onClose }: ConsultModalProps) {
+  const tr = useT()
+
   useEffect(() => {
     if (open) document.body.classList.add('modal-open')
     else document.body.classList.remove('modal-open')
@@ -43,7 +46,7 @@ export default function ConsultModal({ open, onClose }: ConsultModalProps) {
     },
     {
       icon: <Phone size={18} color="#C9A96E" />,
-      label: 'Телефон',
+      label: tr('contact.phone'),
       value: '+374 94 108 303',
       href: 'tel:+37494108303',
       color: '#C9A96E',
@@ -92,13 +95,13 @@ export default function ConsultModal({ open, onClose }: ConsultModalProps) {
             fontFamily: 'var(--font-serif)', fontSize: '1.7rem', fontWeight: 400,
             color: 'var(--t1)', margin: '0 0 4px 0',
           }}>
-            Связаться с нами
+            {tr('consult.title')}
           </h3>
           <p style={{
             fontFamily: 'var(--font-mono)', fontSize: '0.6rem',
             color: 'var(--tm)', letterSpacing: '0.1em', margin: 0,
           }}>
-            ArmNair · Ереван · Армения
+            {tr('consult.subtitle')}
           </p>
         </div>
 
@@ -146,7 +149,7 @@ export default function ConsultModal({ open, onClose }: ConsultModalProps) {
           fontFamily: 'var(--font-mono)', fontSize: '0.62rem',
           color: 'var(--tm)', letterSpacing: '0.06em',
         }}>
-          Ответим в течение 15 минут · Пн–Вс 9:00–21:00
+          {tr('consult.footer')}
         </div>
       </div>
     </div>

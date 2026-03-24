@@ -1,6 +1,8 @@
 'use client'
 import { MapPin, Search, X } from 'lucide-react'
 import { Complex } from '@/lib/types'
+import { useLang } from '@/lib/LanguageContext'
+import { useT, useTStatus, useTDistrict } from '@/lib/StaticTranslationProvider'
 
 interface Filters {
   district: string; developer: string; price: number
@@ -14,6 +16,10 @@ interface FilterBarProps {
 }
 
 export default function FilterBar({ filters, onFiltersChange, resultCount, data }: FilterBarProps) {
+  const { lang } = useLang()
+  const tr = useT()
+  const tStatus = useTStatus()
+  const tDistrict = useTDistrict()
   const districts  = Array.from(new Set(data.map(c => c.district))).sort()
   const developers = Array.from(new Set(data.map(c => c.developer))).sort()
   const statuses   = Array.from(new Set(data.map(c => c.status))).sort()
@@ -21,6 +27,13 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
   const set = (k: keyof Filters, v: string | number) => onFiltersChange({ ...filters, [k]: v })
   const reset = () => onFiltersChange({ district:'', developer:'', price:9_999_999, tax:'', status:'', search:'' })
   const hasFilters = filters.district || filters.developer || filters.price < 9_999_999 || filters.tax || filters.status || filters.search
+
+  const objLabel = () => {
+    if (lang !== 'ru') return `${resultCount} ${tr('filter.objects')}`
+    if (resultCount === 1) return `${resultCount} ${tr('filter.objects')}`
+    if (resultCount >= 2 && resultCount <= 4) return `${resultCount} ${tr('filter.objects2')}`
+    return `${resultCount} ${tr('filter.objectsN')}`
+  }
 
   return (
     <div style={{
@@ -40,7 +53,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
           color:'var(--teal)',
         }}>
           <MapPin size={11} />
-          <span>Ереван</span>
+          <span>{tr('filter.city')}</span>
         </div>
 
         <div style={{ width:1, height:20, background:'var(--border-c)' }} />
@@ -54,7 +67,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
         }}>
           <Search size={11} color="var(--t3)" />
           <input
-            id="filter-search-input" type="text" placeholder="Поиск..." value={filters.search}
+            id="filter-search-input" type="text" placeholder={tr('filter.search')} value={filters.search}
             onChange={e => set('search', e.target.value)}
             style={{
               background:'none', border:'none', outline:'none',
@@ -70,37 +83,37 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
         </div>
 
         <select className="pill-sel" value={filters.district} onChange={e => set('district', e.target.value)}>
-          <option value="">Район</option>
-          {districts.map(d => <option key={d} value={d}>{d}</option>)}
+          <option value="">{tr('filter.district')}</option>
+          {districts.map(d => <option key={d} value={d}>{tDistrict(d)}</option>)}
         </select>
 
         <select className="pill-sel" value={filters.developer} onChange={e => set('developer', e.target.value)}>
-          <option value="">Застройщик</option>
+          <option value="">{tr('filter.developer')}</option>
           {developers.map(d => <option key={d} value={d}>{d}</option>)}
         </select>
 
         <select className="pill-sel" value={filters.price} onChange={e => set('price', Number(e.target.value))}>
-          <option value={9_999_999}>Цена: любая</option>
-          <option value={50_000}>до $50 000</option>
-          <option value={100_000}>до $100 000</option>
-          <option value={200_000}>до $200 000</option>
-          <option value={500_000}>до $500 000</option>
+          <option value={9_999_999}>{tr('filter.price')}</option>
+          <option value={50_000}>{tr('filter.price50')}</option>
+          <option value={100_000}>{tr('filter.price100')}</option>
+          <option value={200_000}>{tr('filter.price200')}</option>
+          <option value={500_000}>{tr('filter.price500')}</option>
         </select>
 
         <select className="pill-sel" value={filters.status} onChange={e => set('status', e.target.value)}>
-          <option value="">Статус</option>
-          {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+          <option value="">{tr('filter.status')}</option>
+          {statuses.map(s => <option key={s} value={s}>{tStatus(s)}</option>)}
         </select>
 
         <select className="pill-sel" value={filters.tax} onChange={e => set('tax', e.target.value)}>
-          <option value="">Возврат налога</option>
-          <option value="yes">Есть</option>
-          <option value="no">Нет</option>
+          <option value="">{tr('filter.taxRefund')}</option>
+          <option value="yes">{tr('filter.taxYes')}</option>
+          <option value="no">{tr('filter.taxNo')}</option>
         </select>
 
         <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:10 }}>
           <span style={{ fontFamily:'var(--font-mono)', fontSize:'0.7rem', color:'var(--gold)', letterSpacing:'0.06em' }}>
-            {resultCount} объект{resultCount === 1 ? '' : resultCount >= 2 && resultCount <= 4 ? 'а' : 'ов'}
+            {objLabel()}
           </span>
           {hasFilters && (
             <button onClick={reset} style={{
@@ -111,7 +124,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
               onMouseEnter={e => { e.currentTarget.style.color='var(--gold)'; e.currentTarget.style.borderColor='var(--gold)' }}
               onMouseLeave={e => { e.currentTarget.style.color='var(--t3)'; e.currentTarget.style.borderColor='var(--border-c)' }}
             >
-              Сброс
+              {tr('filter.reset')}
             </button>
           )}
         </div>

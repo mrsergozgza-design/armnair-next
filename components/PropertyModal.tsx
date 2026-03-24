@@ -6,6 +6,9 @@ import { Complex } from '@/lib/types'
 import { fmtAmd, fmtDate, statusStyle, parseYield, priceGrowth } from '@/lib/utils'
 import { useTheme } from './ThemeProvider'
 import { useIsMobile } from '@/lib/useIsMobile'
+import { useLang } from '@/lib/LanguageContext'
+import { useT, useTStatus } from '@/lib/StaticTranslationProvider'
+import { useAutoTranslateBatch, clearTranslationCache } from '@/lib/useAutoTranslate'
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip
@@ -30,6 +33,32 @@ interface PropertyModalProps {
 export default function PropertyModal({ complex: c, onClose, onOpenContact, onOpenMap, isFavorite = false, onToggleFavorite, inCompare = false, onToggleCompare }: PropertyModalProps) {
   const { theme } = useTheme()
   const isMobile = useIsMobile()
+  const { lang } = useLang()
+  const tr = useT()
+  const tStatus = useTStatus()
+
+  const cacheId = `modal-${c?.id ?? '__none__'}-${lang}`
+
+  // Invalidate translation cache for long-text fields when lang or object changes,
+  // so stale Sheets data never gets served from localStorage on lang switch.
+  useEffect(() => {
+    if (!c) return
+    clearTranslationCache(cacheId, ['description', 'developer_description'], 'ru')
+  }, [cacheId])
+
+  // Auto-translate dynamic text fields (source data is Russian from Google Sheets)
+  // description/developer_description are already in Russian — skip API when lang === 'ru'
+  const translated = useAutoTranslateBatch(
+    {
+      description: lang !== 'ru' ? c?.description : undefined,
+      developer_description: lang !== 'ru' ? c?.developer_description : undefined,
+      unit_type: c?.unit_type,
+      subway_station: c?.subway_station,
+    },
+    lang,
+    cacheId,
+    'ru'
+  )
   const [area, setArea] = useState(60)
   const [interestRate, setInterestRate] = useState(11)
   const [loanPct, setLoanPct] = useState(0.80)
@@ -119,7 +148,11 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
     const total = nums.reduce((a, b) => a + b, 0)
     return nums.map(n => ({ value: n, pct: Math.round(n / total * 100) }))
   })()
-  const PAY_LABELS = [['Взнос', 'Остаток'], ['Бронирование', 'Строительство', 'Сдача'], ['Бронирование', '1-й этап', '2-й этап', 'Сдача']]
+  const PAY_LABELS = [
+    [tr('pay.deposit'), tr('pay.balance')],
+    [tr('pay.booking'), tr('pay.construction'), tr('pay.handover')],
+    [tr('pay.booking'), tr('pay.stage1'), tr('pay.stage2'), tr('pay.handover')],
+  ]
   const payLabels = PAY_LABELS[paymentSegments.length - 2] ?? paymentSegments.map((_, i) => `Этап ${i + 1}`)
   const PAY_COLORS = ['#C9A96E', '#A07820', '#7A5C10', '#5A4508']
   const PAY_BG     = ['rgba(201,169,110,0.12)', 'rgba(160,120,32,0.1)', 'rgba(122,92,16,0.08)', 'rgba(90,69,8,0.07)']
@@ -129,13 +162,13 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   const infraItems: InfraIcon[] = (() => {
     if (!c.infrastructure) return []
     const KW: Array<{ keys: string[]; icon: React.ReactNode; label: string }> = [
-      { keys: ['metro','subway','метро','подземка'],        icon: <Train size={14} />,       label: 'Метро' },
-      { keys: ['park','парк','сквер','garden','сад'],       icon: <Trees size={14} />,       label: 'Парк' },
-      { keys: ['school','школа','kindergarten','детск'],    icon: <GraduationCap size={14} />, label: 'Школа' },
-      { keys: ['mall','тц','торгов','shopping','market'],   icon: <ShoppingBag size={14} />, label: 'ТЦ' },
-      { keys: ['university','универ','вуз','college'],      icon: <Building2 size={14} />,   label: 'Универ.' },
-      { keys: ['gym','fitness','фитнес','спорт'],           icon: <Dumbbell size={14} />,    label: 'Фитнес' },
-      { keys: ['restaurant','кафе','cafe','еда','food'],    icon: <Utensils size={14} />,    label: 'Ресторан' },
+      { keys: ['metro','subway','метро','подземка'],        icon: <Train size={14} />,       label: tr('infra.metro') },
+      { keys: ['park','парк','сквер','garden','сад'],       icon: <Trees size={14} />,       label: tr('infra.park') },
+      { keys: ['school','школа','kindergarten','детск'],    icon: <GraduationCap size={14} />, label: tr('infra.school') },
+      { keys: ['mall','тц','торгов','shopping','market'],   icon: <ShoppingBag size={14} />, label: tr('infra.mall') },
+      { keys: ['university','универ','вуз','college'],      icon: <Building2 size={14} />,   label: tr('infra.university') },
+      { keys: ['gym','fitness','фитнес','спорт'],           icon: <Dumbbell size={14} />,    label: tr('infra.gym') },
+      { keys: ['restaurant','кафе','cafe','еда','food'],    icon: <Utensils size={14} />,    label: tr('infra.restaurant') },
     ]
     return c.infrastructure.split(',').map(s => s.trim()).filter(Boolean).map(part => {
       // Format: "metro:20m" or "metro: 20 min" or just "metro"
@@ -144,7 +177,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
       const rawTime = colonIdx !== -1 ? part.slice(colonIdx + 1).trim() : undefined
       // Normalize time: "20m" → "20 мин", "20min" → "20 мин", "20 мин" → "20 мин", bare number → "N мин"
       const time = rawTime
-        ? rawTime.replace(/^(\d+)\s*(?:min|мин|m)$/i, '$1 мин').replace(/^(\d+)$/, '$1 мин')
+        ? rawTime.replace(/^(\d+)\s*(?:min|мин|m)$/i, `$1 ${tr('infra.min')}`).replace(/^(\d+)$/, `$1 ${tr('infra.min')}`)
         : undefined
       const match = KW.find(kw => kw.keys.some(k => keyword.includes(k)))
       return { node: match?.icon ?? <MapPin size={14} />, label: match?.label ?? part.replace(/:.*$/, '').trim(), time }
@@ -152,10 +185,10 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   })()
 
   const metrics = [
-    { label: '$/м²',       value: `$${c.price_usd.toLocaleString()}` },
-    { label: '֏/м²',       value: fmtAmd(c.price_amd) },
-    { label: 'Доходность', value: c.yield },
-    { label: 'Возврат налога', value: c.tax_refund ? 'Да' : 'Нет' },
+    { label: '$/м²',                        value: `$${c.price_usd.toLocaleString()}` },
+    { label: '֏/м²',                        value: fmtAmd(c.price_amd) },
+    { label: tr('modal.yield'),        value: c.yield },
+    { label: tr('modal.taxRefund'),    value: c.tax_refund ? tr('modal.yes') : tr('modal.no') },
   ]
 
   // CTA buttons (reused in both desktop right-col and mobile sticky footer)
@@ -176,7 +209,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
         onMouseLeave={e => { e.currentTarget.style.background = 'rgba(160,120,32,0.15)' }}
       >
         <Phone size={14} />
-        ПОЛУЧИТЬ КОНСУЛЬТАЦИЮ
+        {tr('modal.getConsult')}
       </button>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
         <a href={`https://wa.me/971528892559?text=Интересует ${encodeURIComponent(c.name)}`}
@@ -212,8 +245,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 9000,
-        background: 'rgba(0,0,0,0.65)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        background: 'rgba(0,0,0,0.75)',
         display: 'flex',
         alignItems: isMobile ? 'flex-end' : 'center',
         justifyContent: 'center',
@@ -377,7 +409,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
             {/* Badges */}
             <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', gap: 6 }}>
               <div style={{ background: ss.bg, border: `1px solid ${ss.border}`, color: ss.color, borderRadius: 2, fontFamily: 'var(--font-mono)', fontSize: '0.6rem', padding: '3px 10px', letterSpacing: '0.06em' }}>
-                {c.status}
+                {tStatus(c.status)}
               </div>
               {c.tax_refund && (
                 <div style={{ background: 'rgba(42,157,143,0.8)', borderRadius: 2, fontFamily: 'var(--font-mono)', fontSize: '0.6rem', padding: '3px 10px', color: '#fff', letterSpacing: '0.06em' }}>
@@ -411,7 +443,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                   onMouseLeave={e => (e.currentTarget.style.background = 'rgba(160,120,32,0.1)')}
                 >
                   <Download size={14} />
-                  СМОТРЕТЬ ВСЕ ФОТО И ВИДЕО ПРОЕКТА
+                  {tr('modal.viewPhotos')}
                 </a>
               )}
               {c.presentation && (
@@ -429,7 +461,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                   onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
                 >
                   <Download size={16} />
-                  СКАЧАТЬ ПРЕЗЕНТАЦИЮ ОБЪЕКТА
+                  {tr('modal.downloadPres')}
                 </a>
               )}
             </div>
@@ -459,15 +491,15 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
 
             {/* Left column */}
             <div style={{ padding: isMobile ? '1rem' : '1.5rem', borderRight: isMobile ? 'none' : '1px solid rgba(139,105,20,0.1)' }}>
-              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 8, textTransform: 'uppercase' }}>Описание</h4>
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: 'var(--t2)', lineHeight: 1.7, marginBottom: '1.5rem' }}>{c.description}</p>
+              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 8, textTransform: 'uppercase' }}>{tr('modal.description')}</h4>
+              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: 'var(--t2)', lineHeight: 1.7, marginBottom: '1.5rem' }}>{translated.description || c.description}</p>
 
               <div style={{ marginBottom: '1.5rem' }}>
                 {[
-                  { label: 'Обновлено',   value: fmtDate(c.last_updated) },
-                  { label: 'Застройщик',  value: c.developer },
-                  { label: 'Район',       value: c.district },
-                  { label: 'Статус',      value: c.status },
+                  { label: tr('modal.updated'),   value: fmtDate(c.last_updated, lang) },
+                  { label: tr('modal.developer'), value: c.developer },
+                  { label: tr('modal.district'),  value: c.district },
+                  { label: tr('modal.status'),    value: tStatus(c.status) },
                 ].map((row, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(139,105,20,0.08)', padding: '0.45rem 0' }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.06em' }}>{row.label}</span>
@@ -478,13 +510,13 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
 
               {(c.unit_type || c.min_area || c.subway_station || c.commission || c.contact || c.website) && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 8, textTransform: 'uppercase' }}>Характеристики</h4>
+                  <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 8, textTransform: 'uppercase' }}>{tr('modal.characteristics')}</h4>
                   {[
-                    c.unit_type      && { label: 'Тип объекта',    value: c.unit_type },
-                    c.min_area       && { label: 'Мин. площадь',   value: `${c.min_area} м²` },
-                    c.subway_station && { label: 'Метро',          value: c.subway_station },
-                    c.commission     && { label: 'Комиссия',       value: `${c.commission}%` },
-                    c.contact        && { label: 'Контакт',        value: c.contact },
+                    c.unit_type      && { label: tr('modal.unitType'),   value: translated.unit_type || c.unit_type },
+                    c.min_area       && { label: tr('modal.minArea'),    value: `${c.min_area} м²` },
+                    c.subway_station && { label: tr('modal.subway'),     value: translated.subway_station || c.subway_station },
+                    c.commission     && { label: tr('modal.commission'), value: `${c.commission}%` },
+                    c.contact        && { label: tr('modal.contact'),    value: c.contact },
                   ].filter(Boolean).map((row, i) => {
                     const r = row as { label: string; value: string }
                     return (
@@ -496,7 +528,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                   })}
                   {c.website && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(139,105,20,0.08)', padding: '0.45rem 0' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.06em' }}>Сайт</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.06em' }}>{tr('modal.website')}</span>
                       <a href={c.website} target="_blank" rel="noopener noreferrer"
                         style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--gold)', textDecoration: 'none', maxWidth: '60%', textAlign: 'right', wordBreak: 'break-word' }}>
                         {c.website.replace(/^https?:\/\//, '')}
@@ -533,7 +565,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: PAY_COLORS[i % PAY_COLORS.length], fontWeight: 600 }}>{seg.value}%</span>
                         </div>
                         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.56rem', color: 'var(--tm)', letterSpacing: '0.06em' }}>
-                          {payLabels[i] ?? `Этап ${i + 1}`}
+                          {payLabels[i] ?? `${tr('pay.stageN')} ${i + 1}`}
                         </div>
                       </div>
                     ))}
@@ -544,13 +576,13 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
               {/* Tax calculator */}
               <div style={{ background: 'rgba(160,120,32,0.05)', border: '1px solid rgba(160,120,32,0.12)', borderRadius: 4, padding: '1rem' }}>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#A07820', letterSpacing: '0.12em', marginBottom: 12, textTransform: 'uppercase' }}>
-                  Налоговый калькулятор
+                  {tr('tax.title')}
                 </div>
 
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>Параметры объекта</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>{tr('tax.objParams')}</div>
                 <div style={{ marginBottom: 4 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>Площадь</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>{tr('tax.area')}</span>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{area} м²  ·  {fmtAmd(priceAmd)}</span>
                   </div>
                   <input type="range" min={30} max={300} value={area}
@@ -558,12 +590,12 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                     style={{ width: '100%', accentColor: '#A07820', cursor: 'pointer', marginBottom: 10 }} />
                 </div>
 
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8, marginTop: 4 }}>Параметры ипотеки</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8, marginTop: 4 }}>{tr('tax.mortgageParams')}</div>
 
                 <div style={{ marginBottom: 4 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>Сумма ипотеки</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{fmtAmd(loanAmt)} · взнос {downPct}%</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>{tr('tax.loanAmount')}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{fmtAmd(loanAmt)} · {tr('tax.downPayment')} {downPct}%</span>
                   </div>
                   <input type="range" min={loanMin} max={loanMax} step={loanStep} value={loanAmt}
                     onChange={e => setLoanPct(Number(e.target.value) / priceAmd)}
@@ -572,8 +604,8 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
 
                 <div style={{ marginBottom: 4 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>Процентная ставка</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{interestRate}% годовых</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>{tr('tax.interestRate')}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{interestRate}% {tr('tax.perYear')}</span>
                   </div>
                   <input type="range" min={8} max={15} step={0.5} value={interestRate}
                     onChange={e => setInterestRate(Number(e.target.value))}
@@ -582,19 +614,19 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
 
                 <div style={{ marginBottom: 12 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>Официальная зарплата</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{fmtAmd(salary)}/мес</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>{tr('tax.officialSalary')}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{fmtAmd(salary)}{tr('tax.perMonth')}</span>
                   </div>
                   <input type="range" min={200000} max={2000000} step={50000} value={salary}
                     onChange={e => setSalary(Number(e.target.value))}
                     style={{ width: '100%', accentColor: '#A07820', cursor: 'pointer' }} />
                 </div>
 
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8, paddingTop: 4, borderTop: '1px solid rgba(160,120,32,0.12)' }}>Результаты</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8, paddingTop: 4, borderTop: '1px solid rgba(160,120,32,0.12)' }}>{tr('tax.results')}</div>
                 {[
-                  { label: 'Подоходный налог (20%)',    value: fmtAmd(Math.round(incomeTax)) + '/мес' },
-                  { label: 'Проценты по ипотеке (мес)', value: fmtAmd(Math.round(monthlyInterest)) },
-                  { label: 'Сумма возврата (до 500к ֏)', value: c.tax_refund ? fmtAmd(Math.round(refundAmt)) + '/мес' : 'Нет', color: c.tax_refund ? '#2A9D8F' : 'var(--tm)' },
+                  { label: tr('tax.incomeTax'),  value: fmtAmd(Math.round(incomeTax)) + tr('tax.perMonth') },
+                  { label: tr('tax.monthlyInt'), value: fmtAmd(Math.round(monthlyInterest)) },
+                  { label: tr('tax.refundAmt'),  value: c.tax_refund ? fmtAmd(Math.round(refundAmt)) + tr('tax.perMonth') : tr('modal.no'), color: c.tax_refund ? '#2A9D8F' : 'var(--tm)' },
                 ].map((row, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '0.32rem 0', borderBottom: '1px solid rgba(160,120,32,0.06)', gap: 12 }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)' }}>{row.label}</span>
@@ -602,35 +634,35 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                   </div>
                 ))}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '0.45rem 0', gap: 12 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t2)', fontWeight: 700 }}>Ваш реальный платеж по %</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#C9A96E', fontWeight: 700, flexShrink: 0 }}>{fmtAmd(Math.round(realPayment))}/мес</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t2)', fontWeight: 700 }}>{tr('tax.realPayment')}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#C9A96E', fontWeight: 700, flexShrink: 0 }}>{fmtAmd(Math.round(realPayment))}{tr('tax.perMonth')}</span>
                 </div>
                 {c.tax_refund && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, padding: '0.6rem 0.75rem', background: 'rgba(160,120,32,0.12)', border: '1px solid rgba(160,120,32,0.3)', borderRadius: 3, gap: 12 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#C9A96E', letterSpacing: '0.04em' }}>Итоговая выгода за год</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#C9A96E', letterSpacing: '0.04em' }}>{tr('tax.annualBenefit')}</span>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: '#C9A96E', fontWeight: 600, flexShrink: 0 }}>{fmtAmd(Math.round(refundAmt * 12))}</span>
                   </div>
                 )}
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.57rem', color: 'var(--tm)', marginTop: 12, lineHeight: 1.6, opacity: 0.75 }}>
-                  * Расчет является приблизительным. Максимальный возврат ограничен 1.5 млн ֏ в квартал согласно законодательству РА.
+                  {tr('tax.disclaimer')}
                 </div>
               </div>
             </div>
 
             {/* Right column */}
             <div style={{ padding: isMobile ? '1rem' : '1.5rem', borderTop: isMobile ? '1px solid rgba(139,105,20,0.1)' : 'none' }}>
-              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 12, textTransform: 'uppercase' }}>Динамика цен</h4>
+              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 12, textTransform: 'uppercase' }}>{tr('modal.priceChart')}</h4>
               <div style={{ height: 160, marginBottom: 8 }}>
                 <Line data={chartData} options={chartOptions as never} />
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: '1.5rem' }}>
                 <TrendingUp size={13} color={growth >= 0 ? '#2A9D8F' : '#E76F51'} />
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: growth >= 0 ? '#2A9D8F' : '#E76F51' }}>
-                  {growth >= 0 ? '+' : ''}{growth.toFixed(1)}% за период
+                  {growth >= 0 ? '+' : ''}{growth.toFixed(1)}{tr('modal.overPeriod')}
                 </span>
               </div>
 
-              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>На карте</h4>
+              <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>{tr('modal.onMap')}</h4>
               <div onClick={() => onOpenMap(c.id)} title="Открыть на карте"
                 style={{ height: 180, marginBottom: '1.5rem', border: '1px solid rgba(139,105,20,0.15)', overflow: 'hidden', cursor: 'pointer' }}>
                 <MiniMap lat={c.lat} lng={c.lng} name={c.name} theme={theme} />
@@ -640,7 +672,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
               {(c.developer_logo || c.developer_description) && (
                 <div style={{ marginBottom: '1.5rem' }}>
                   <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>
-                    О застройщике
+                    {tr('modal.aboutDeveloper')}
                   </h4>
                   <div style={{ background: 'var(--card)', border: '1px solid rgba(139,105,20,0.12)', borderRadius: 8, padding: '0.9rem 1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: c.developer_description ? 10 : 0 }}>
@@ -652,7 +684,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                       )}
                       <div>
                         <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.05rem', fontWeight: 400, color: 'var(--t1)', lineHeight: 1.2 }}>{c.developer}</div>
-                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.57rem', color: 'var(--tm)', letterSpacing: '0.08em', marginTop: 3 }}>ЗАСТРОЙЩИК</div>
+                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.57rem', color: 'var(--tm)', letterSpacing: '0.08em', marginTop: 3 }}>{tr('modal.developer_label')}</div>
                       </div>
                     </div>
                     {c.developer_description && (() => {
@@ -661,14 +693,17 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                       return (
                         <div>
                           <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.82rem', color: 'var(--t3)', lineHeight: 1.65, margin: 0 }}>
-                            {developerExpanded || !isLong ? c.developer_description : c.developer_description.slice(0, MAX) + '…'}
+                            {(() => {
+                              const text = translated.developer_description || c.developer_description || ''
+                              return developerExpanded || !isLong ? text : text.slice(0, MAX) + '…'
+                            })()}
                           </p>
                           {isLong && (
                             <button
                               onClick={() => setDeveloperExpanded(v => !v)}
                               style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#A07820', letterSpacing: '0.08em', marginTop: 7, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
                             >
-                              {developerExpanded ? 'СВЕРНУТЬ' : 'ЧИТАТЬ ДАЛЕЕ'}
+                              {developerExpanded ? tr('modal.collapse') : tr('modal.readMore')}
                               {developerExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
                             </button>
                           )}
@@ -683,7 +718,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
               {infraItems.length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
                   <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>
-                    Инфраструктура рядом
+                    {tr('modal.nearbyInfra')}
                   </h4>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                     {infraItems.map((item, i) => (

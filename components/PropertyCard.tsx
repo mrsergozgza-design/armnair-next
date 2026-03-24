@@ -4,6 +4,9 @@ import Image from 'next/image'
 import { Complex } from '@/lib/types'
 import { fmtAmd, statusStyle, freshLabel, priceGrowth } from '@/lib/utils'
 import { ArrowRight, Heart, GitCompare, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useLang } from '@/lib/LanguageContext'
+import { useT, useTStatus, useTDistrict } from '@/lib/StaticTranslationProvider'
+import { useAutoTranslate } from '@/lib/useAutoTranslate'
 
 // Тёмный 1×1 placeholder пока грузится реальное фото
 const BLUR_PLACEHOLDER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII='
@@ -19,10 +22,15 @@ interface Props {
 }
 
 function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onToggleFavorite, inCompare = false, onToggleCompare }: Props) {
+  const { lang } = useLang()
+  const tr = useT()
+  const tStatus = useTStatus()
+  const tDistrict = useTDistrict()
   const ss = statusStyle(c.status)
-  const fresh = freshLabel(c.last_updated)
+  const fresh = freshLabel(c.last_updated, lang)
   const growth = priceGrowth(c.history)
   const [heartAnim, setHeartAnim] = useState(false)
+  const translatedDesc = useAutoTranslate(c.description, lang, c.id, 'description', 'ru')
   const [slideIdx, setSlideIdx] = useState(0)
   const [hovering, setHovering] = useState(false)
   const touchStartX = useRef(0)
@@ -177,7 +185,7 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
             background: 'rgba(42,157,143,0.85)', borderRadius: 2,
             padding: '2px 7px', fontFamily: 'var(--font-mono)', fontSize: '0.56rem',
             letterSpacing: '0.08em', color: '#fff',
-          }}>ВОЗВРАТ НАЛОГА</div>
+          }}>{tr('card.taxRefund')}</div>
         )}
 
         <div style={{
@@ -186,7 +194,7 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
           borderRadius: 2, padding: '2px 8px',
           fontFamily: 'var(--font-mono)', fontSize: '0.56rem',
           letterSpacing: '0.06em', color: ss.color,
-        }}>{c.status}</div>
+        }}>{tStatus(c.status)}</div>
 
         {/* Compare button */}
         <button
@@ -230,7 +238,7 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
           position: 'absolute', bottom: 10, left: 10,
           fontFamily: 'var(--font-mono)', fontSize: '0.58rem',
           color: 'rgba(255,255,255,0.7)', letterSpacing: '0.08em',
-        }}>{c.district}</div>
+        }}>{tDistrict(c.district)}</div>
       </div>
 
       {/* Body */}
@@ -267,9 +275,9 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
           margin: '0 -0.8rem 0.6rem -0.8rem', padding: '0.35rem 0.8rem',
         }}>
           {[
-            { label: c.unit_type ? 'Тип' : 'Доходность', value: c.unit_type ?? c.yield },
-            { label: c.min_area ? 'Площадь' : 'Рост', value: c.min_area ? `от ${c.min_area}м²` : (growth > 0 ? `+${growth.toFixed(1)}%` : `${growth.toFixed(1)}%`) },
-            { label: 'Район', value: c.district.split('-')[0] },
+            { label: c.unit_type ? tr('card.type') : tr('card.yield'), value: c.unit_type ?? c.yield },
+            { label: c.min_area ? tr('card.area') : tr('card.growth'), value: c.min_area ? `${tr('card.from')} ${c.min_area}м²` : (growth > 0 ? `+${growth.toFixed(1)}%` : `${growth.toFixed(1)}%`) },
+            { label: tr('card.district'), value: tDistrict(c.district.split('-')[0]) },
           ].map((m, i) => (
             <div key={i} style={{ flex: 1, textAlign: i === 1 ? 'center' : i === 2 ? 'right' : 'left' }}>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.54rem', color: 'var(--tm)', letterSpacing: '0.06em', marginBottom: 1 }}>{m.label}</div>
@@ -286,7 +294,7 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
             display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
           }}>
-            {c.description}
+            {translatedDesc}
           </p>
         )}
 
@@ -295,7 +303,7 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
             {fresh.label ?? '—'}
           </span>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: 3 }}>
-            Подробнее <ArrowRight size={10} />
+            {tr('card.more')} <ArrowRight size={10} />
           </span>
         </div>
       </div>

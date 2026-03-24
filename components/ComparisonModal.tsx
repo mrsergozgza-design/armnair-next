@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { X, Trash2 } from 'lucide-react'
 import { Complex } from '@/lib/types'
 import { fmtAmd, parseYield } from '@/lib/utils'
+import { useT, useTStatus, useTDistrict } from '@/lib/StaticTranslationProvider'
 
 interface Props {
   complexes: Complex[]        // только те, что в compareIds
@@ -15,6 +16,9 @@ interface Props {
 const MONTHLY_REFUND_CAP = 500_000
 
 export default function ComparisonModal({ complexes, onRemove, onClear, onClose, onOpenModal }: Props) {
+  const tr = useT()
+  const tStatus = useTStatus()
+  const tDistrict = useTDistrict()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -41,7 +45,7 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
 
   const rows: { label: string; cells: { content: React.ReactNode; highlight?: 'best' | null }[] }[] = [
     {
-      label: 'Цена ($/м²)',
+      label: tr('compare.priceUSD'),
       cells: complexes.map(c => cell(
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', fontWeight: 500, color: c.price_usd === minPrice ? '#2A9D8F' : 'var(--t1)' }}>
           ${c.price_usd.toLocaleString()}
@@ -50,7 +54,7 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
       )),
     },
     {
-      label: 'Цена (֏/м²)',
+      label: tr('compare.priceAMD'),
       cells: complexes.map(c => cell(
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--t2)' }}>
           {fmtAmd(c.price_amd)}
@@ -58,25 +62,25 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
       )),
     },
     {
-      label: 'Район',
+      label: tr('compare.district'),
       cells: complexes.map(c => cell(
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--t2)' }}>{c.district}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--t2)' }}>{tDistrict(c.district)}</span>
       )),
     },
     {
-      label: 'Статус',
+      label: tr('compare.status'),
       cells: complexes.map(c => cell(
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--t2)' }}>{c.status}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--t2)' }}>{tStatus(c.status)}</span>
       )),
     },
     {
-      label: 'Тип объекта',
+      label: tr('compare.unitType'),
       cells: complexes.map(c => cell(
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--t2)' }}>{c.unit_type ?? '—'}</span>
       )),
     },
     {
-      label: 'Доходность',
+      label: tr('compare.yield'),
       cells: complexes.map(c => {
         const y = parseYield(c.yield)
         return cell(
@@ -88,36 +92,36 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
       }),
     },
     {
-      label: 'Макс. возврат\nналога (мес.)',
+      label: tr('compare.taxRefund'),
       cells: complexes.map(c => cell(
         c.tax_refund
           ? <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: '#2A9D8F', fontWeight: 500 }}>
-              до {fmtAmd(MONTHLY_REFUND_CAP)}
+              {tr('compare.upTo')} {fmtAmd(MONTHLY_REFUND_CAP)}
             </span>
           : <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--tm)' }}>—</span>,
         c.tax_refund ? 'best' : null
       )),
     },
     {
-      label: 'Мин. площадь',
+      label: tr('compare.minArea'),
       cells: complexes.map(c => cell(
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--t2)' }}>{c.min_area ? `от ${c.min_area} м²` : '—'}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--t2)' }}>{c.min_area ? `${tr('compare.fromArea')} ${c.min_area} м²` : '—'}</span>
       )),
     },
     {
-      label: 'Рассрочка',
+      label: tr('compare.payment'),
       cells: complexes.map(c => cell(
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--t2)' }}>{c.payment_plan ?? '—'}</span>
       )),
     },
     {
-      label: 'Метро',
+      label: tr('compare.subway'),
       cells: complexes.map(c => cell(
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--t2)' }}>{c.subway_station ?? '—'}</span>
       )),
     },
     {
-      label: 'Инфраструктура',
+      label: tr('compare.infra'),
       cells: complexes.map(c => cell(
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--t2)', display: 'block', maxWidth: 180 }}>{c.infrastructure ?? '—'}</span>
       )),
@@ -158,10 +162,10 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#A07820', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-              Сравнение объектов
+              {tr('compare.title')}
             </span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)' }}>
-              {complexes.length} из 4
+              {complexes.length} {tr('compare.ofFour')}
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -178,7 +182,7 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
               onMouseLeave={e => (e.currentTarget.style.background = 'none')}
             >
               <Trash2 size={11} />
-              ОЧИСТИТЬ
+              {tr('compare.clear')}
             </button>
             <button
               onClick={onClose}
@@ -304,7 +308,7 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
                     border: '1px solid rgba(42,157,143,0.3)',
                     borderRadius: 2, padding: '1px 4px', letterSpacing: '0.06em',
                   }}>
-                    ЛУЧШЕ
+                    {tr('compare.best')}
                   </span>
                 )}
                 {cell.content}
@@ -315,7 +319,7 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
 
         <div style={{ padding: '0.75rem 1rem', display: 'flex', justifyContent: 'center', minWidth: 480 }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.57rem', color: 'var(--tm)', letterSpacing: '0.04em' }}>
-            Нажмите на название объекта, чтобы открыть детальную карточку
+            {tr('compare.hint')}
           </span>
         </div>
 
