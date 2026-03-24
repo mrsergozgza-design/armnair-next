@@ -211,33 +211,6 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
         <Phone size={14} />
         {tr('modal.getConsult')}
       </button>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
-        <a href={`https://wa.me/971528892559?text=Интересует ${encodeURIComponent(c.name)}`}
-          target="_blank" rel="noopener noreferrer"
-          style={{
-            background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.25)',
-            color: '#25D366', padding: '0.55rem',
-            fontFamily: 'var(--font-mono)', fontSize: '0.65rem',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            textDecoration: 'none',
-          }}
-        >
-          <MessageCircle size={13} />
-          WhatsApp
-        </a>
-        <a href="https://t.me/NazaryanDubai"
-          target="_blank" rel="noopener noreferrer"
-          style={{
-            background: 'rgba(42,171,238,0.08)', border: '1px solid rgba(42,171,238,0.25)',
-            color: '#2AABEE', padding: '0.55rem',
-            fontFamily: 'var(--font-mono)', fontSize: '0.65rem',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            textDecoration: 'none',
-          }}
-        >
-          Telegram
-        </a>
-      </div>
     </>
   )
 

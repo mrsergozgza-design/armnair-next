@@ -6,9 +6,10 @@ import { useT } from '@/lib/StaticTranslationProvider'
 interface ConsultModalProps {
   open: boolean
   onClose: () => void
+  propertyName?: string
 }
 
-export default function ConsultModal({ open, onClose }: ConsultModalProps) {
+export default function ConsultModal({ open, onClose, propertyName }: ConsultModalProps) {
   const tr = useT()
 
   useEffect(() => {
@@ -30,7 +31,9 @@ export default function ConsultModal({ open, onClose }: ConsultModalProps) {
       icon: <MessageCircle size={18} color="#25D366" />,
       label: 'WhatsApp',
       value: '+971 52 889 2559',
-      href: 'https://wa.me/971528892559',
+      href: propertyName
+        ? `https://wa.me/971528892559?text=${encodeURIComponent(`Hi, I'm interested in ${propertyName}`)}`
+        : 'https://wa.me/971528892559',
       color: '#25D366',
       bg: 'rgba(37,211,102,0.08)',
       border: 'rgba(37,211,102,0.2)',
@@ -39,7 +42,9 @@ export default function ConsultModal({ open, onClose }: ConsultModalProps) {
       icon: <Send size={18} color="#2AABEE" />,
       label: 'Telegram',
       value: '@NazaryanDubai',
-      href: 'https://t.me/NazaryanDubai',
+      href: propertyName
+        ? `https://t.me/NazaryanDubai?text=${encodeURIComponent(`Hi, I'm interested in ${propertyName}`)}`
+        : 'https://t.me/NazaryanDubai',
       color: '#2AABEE',
       bg: 'rgba(42,171,238,0.08)',
       border: 'rgba(42,171,238,0.2)',
@@ -59,8 +64,7 @@ export default function ConsultModal({ open, onClose }: ConsultModalProps) {
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 10000,
-        background: 'rgba(0,0,0,0.7)',
-        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        background: 'rgba(0,0,0,0.75)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '1rem',
       }}

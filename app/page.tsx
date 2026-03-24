@@ -4,6 +4,8 @@ import { Complex } from '@/lib/types'
 import { FALLBACK } from '@/lib/data'
 import { useFavorites } from '@/lib/useFavorites'
 import { useCompare } from '@/lib/useCompare'
+import { useLang } from '@/lib/LanguageContext'
+import { useT } from '@/lib/StaticTranslationProvider'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
 import FilterBar from '@/components/FilterBar'
@@ -24,6 +26,8 @@ interface Filters {
 const DEFAULT_FILTERS: Filters = { district:'', developer:'', price:9_999_999, tax:'', status:'', search:'' }
 
 export default function Home() {
+  const { lang } = useLang()
+  const tr = useT()
   const [data, setData]         = useState<Complex[]>([])
   const [filters, setFilters]   = useState<Filters>(DEFAULT_FILTERS)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -65,7 +69,9 @@ export default function Home() {
     const ids = Array.from(favorites).join(',')
     if (!ids) return
     const shareUrl = `${window.location.origin}/?shared=${ids}`
-    const text = `Здравствуйте! Специально для вас подготовлена персональная подборка объектов недвижимости в Ереване от ArmNair:\n${shareUrl}`
+    const text = lang === 'ru'
+      ? `Здравствуйте! Специально для вас подготовлена персональная подборка объектов недвижимости в Ереване от ArmNair:\n${shareUrl}`
+      : `Hello! A personal selection of Yerevan real estate from ArmNair:\n${shareUrl}`
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
   }
 
@@ -123,7 +129,11 @@ export default function Home() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ color: '#C9A96E', fontSize: '0.9rem' }}>✦</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#C9A96E', letterSpacing: '0.1em' }}>
-              ВАША ПЕРСОНАЛЬНАЯ ПОДБОРКА ОТ ARMNAIR · {collectionIds.length} {collectionIds.length === 1 ? 'объект' : collectionIds.length < 5 ? 'объекта' : 'объектов'}
+              {tr('page.collection')} · {collectionIds.length} {
+                lang === 'ru'
+                  ? (collectionIds.length === 1 ? tr('page.item') : collectionIds.length < 5 ? tr('page.items2') : tr('page.items5'))
+                  : tr('page.item')
+              }
             </span>
           </div>
           <button
@@ -138,7 +148,7 @@ export default function Home() {
             onMouseEnter={e => { e.currentTarget.style.color = '#C9A96E'; e.currentTarget.style.borderColor = '#C9A96E' }}
             onMouseLeave={e => { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.borderColor = 'rgba(160,120,32,0.35)' }}
           >
-            СМОТРЕТЬ ВСЕ
+            {tr('page.seeAll')}
           </button>
         </div>
       )}
@@ -163,7 +173,7 @@ export default function Home() {
                 ArmNair
               </span>
               <span style={{ fontFamily:'var(--font-mono)', fontSize:'0.58rem', color:'var(--tm)', letterSpacing:'0.08em' }}>
-                © 2026 ArmNair · Ереван · Армения
+                {tr('page.footer')}
               </span>
             </footer>
           </>
@@ -188,7 +198,7 @@ export default function Home() {
           }
         }}
       />
-      <ConsultModal open={consultOpen} onClose={() => setConsultOpen(false)} />
+      <ConsultModal open={consultOpen} onClose={() => setConsultOpen(false)} propertyName={selectedComplex?.name} />
       {compareOpen && compareComplexes.length > 0 && (
         <ComparisonModal
           complexes={compareComplexes}
