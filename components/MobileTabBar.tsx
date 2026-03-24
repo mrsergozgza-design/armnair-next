@@ -1,5 +1,6 @@
 'use client'
 import { Home, LayoutGrid, Heart, GitCompare } from 'lucide-react'
+import { useT } from '@/lib/StaticTranslationProvider'
 
 interface Props {
   activePage: 'home' | 'analytics' | 'catalog'
@@ -12,10 +13,12 @@ interface Props {
 }
 
 export default function MobileTabBar({ activePage, onNav, favCount, favOnly, onFavFilter, compareCount, onOpenCompare }: Props) {
+  const tr = useT()
+
   const tabs = [
     {
       id: 'home',
-      label: 'ГЛАВНАЯ',
+      labelKey: 'tab.home',
       icon: (active: boolean) => <Home size={22} strokeWidth={active ? 2 : 1.5} />,
       onClick: () => onNav('home'),
       active: activePage === 'home' && !favOnly,
@@ -23,7 +26,7 @@ export default function MobileTabBar({ activePage, onNav, favCount, favOnly, onF
     },
     {
       id: 'catalog',
-      label: 'КАТАЛОГ',
+      labelKey: 'tab.catalog',
       icon: (active: boolean) => <LayoutGrid size={22} strokeWidth={active ? 2 : 1.5} />,
       onClick: () => onNav('catalog'),
       active: activePage === 'catalog',
@@ -31,7 +34,7 @@ export default function MobileTabBar({ activePage, onNav, favCount, favOnly, onF
     },
     {
       id: 'favorites',
-      label: 'ИЗБРАННОЕ',
+      labelKey: 'tab.favorites',
       icon: (active: boolean) => <Heart size={22} strokeWidth={active ? 2 : 1.5} fill={active ? '#C9A96E' : 'none'} />,
       onClick: onFavFilter,
       active: favOnly,
@@ -39,7 +42,7 @@ export default function MobileTabBar({ activePage, onNav, favCount, favOnly, onF
     },
     {
       id: 'compare',
-      label: 'СРАВНЕНИЕ',
+      labelKey: 'tab.compare',
       icon: (active: boolean) => <GitCompare size={22} strokeWidth={active ? 2 : 1.5} />,
       onClick: onOpenCompare,
       active: compareCount > 0,
@@ -80,7 +83,7 @@ export default function MobileTabBar({ activePage, onNav, favCount, favOnly, onF
             fontFamily: 'var(--font-mono)', fontSize: '0.48rem',
             letterSpacing: '0.06em', lineHeight: 1,
           }}>
-            {tab.label}
+            {tr(tab.labelKey)}
           </span>
           {tab.badge !== undefined && (
             <span style={{

@@ -1,9 +1,12 @@
 'use client'
 import { useEffect, useState } from 'react'
 
+import { useT } from '@/lib/StaticTranslationProvider'
+
 export default function Hero() {
   const [mounted, setMounted] = useState(false)
-  useEffect(() => { const t = setTimeout(() => setMounted(true), 50); return () => clearTimeout(t) }, [])
+  const tr = useT()
+  useEffect(() => { const tm = setTimeout(() => setMounted(true), 50); return () => clearTimeout(tm) }, [])
 
   return (
     <section style={{
@@ -34,7 +37,7 @@ export default function Hero() {
             display:'inline-block', animation:'pulseDot 2.5s ease-in-out infinite',
           }} />
           <span style={{ fontFamily:'var(--font-mono)', fontSize:'0.64rem', color:'var(--gold)', letterSpacing:'0.16em', textTransform:'uppercase' }}>
-            Ереван · Армения · 2026
+            {tr('hero.badge')}
           </span>
         </div>
 
@@ -55,7 +58,7 @@ export default function Hero() {
           opacity: mounted ? 1 : 0, transform: mounted ? 'translateY(0)' : 'translateY(16px)',
           transition:'opacity 0.7s ease 0.2s, transform 0.7s ease 0.2s',
         }}>
-          Агрегатор жилых комплексов Еревана. Актуальные данные о рынке недвижимости Армении — цены, доходность, налоговый возврат.
+          {tr('hero.subtitle')}
         </p>
 
         {/* Quote */}
@@ -65,7 +68,7 @@ export default function Hero() {
           transition:'opacity 0.7s ease 0.35s, transform 0.7s ease 0.35s',
         }}>
           <p style={{ fontFamily:'var(--font-serif)', fontStyle:'italic', fontSize:'0.95rem', color:'var(--t3)', lineHeight:1.65, margin:0 }}>
-            <span style={{ color:'var(--gold-b)' }}>Nair</span> — «смотри» на армянском. Мы помогаем увидеть рынок недвижимости Еревана насквозь.
+            <span style={{ color:'var(--gold-b)' }}>Nair</span> — {tr('hero.quoteNair')} {tr('hero.quoteText')}
           </p>
         </div>
       </div>

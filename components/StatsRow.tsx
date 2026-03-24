@@ -1,15 +1,18 @@
+'use client'
 import { Complex } from '@/lib/types'
+import { useT } from '@/lib/StaticTranslationProvider'
 
 export default function StatsRow({ data }: { data: Complex[] }) {
+  const tr = useT()
   const districts = new Set(data.map(c => c.district)).size
   const minPrice  = data.length ? Math.min(...data.map(c => c.price_usd)) : 0
   const taxCount  = data.filter(c => c.tax_refund).length
 
   const stats = [
-    { value: String(data.length), label: 'проектов' },
-    { value: String(districts),   label: 'локаций' },
-    { value: `$${minPrice.toLocaleString()}`, label: 'от/м²' },
-    { value: String(taxCount),    label: 'с возвратом' },
+    { value: String(data.length), label: tr('stats.projects') },
+    { value: String(districts),   label: tr('stats.locations') },
+    { value: `$${minPrice.toLocaleString()}`, label: tr('stats.fromPerSqm') },
+    { value: String(taxCount),    label: tr('stats.taxRefund') },
   ]
 
   return (

@@ -4,6 +4,7 @@
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-mono: 'DM Mono', monospace;
   --font-sans: 'Outfit', sans-serif;
+  --font-armenian: 'Noto Sans Armenian', sans-serif;
 }
 
 /* ── Light theme (default) ─────────────────────────────────── */
@@ -64,7 +65,7 @@ html.dark {
 html, body {
   background: var(--bg);
   color: var(--t1);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Outfit', 'Noto Sans Armenian', sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   transition: background 0.25s, color 0.25s;
@@ -129,6 +130,18 @@ html, body {
   background-size: 80px 80px;
   mask-image: radial-gradient(ellipse at 50% 30%, black 0%, transparent 65%);
   -webkit-mask-image: radial-gradient(ellipse at 50% 30%, black 0%, transparent 65%);
+}
+
+/* ── Armenian font — applied to elements that may show AM text ─ */
+/* Noto Sans Armenian is loaded via next/font and set as --font-armenian.
+   The browser uses it automatically for Armenian Unicode codepoints
+   because it's in the font-family stack of body. */
+html[data-lang="am"] p,
+html[data-lang="am"] span,
+html[data-lang="am"] button,
+html[data-lang="am"] div,
+html[data-lang="am"] td {
+  line-height: 1.65;
 }
 
 /* ── Scroll lock ────────────────────────────────────────────── */

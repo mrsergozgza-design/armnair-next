@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, DM_Mono, Outfit } from 'next/font/google'
+import { Cormorant_Garamond, DM_Mono, Outfit, Noto_Sans_Armenian } from 'next/font/google'
 import ThemeProvider from '@/components/ThemeProvider'
+import LanguageProvider from '@/lib/LanguageContext'
+import StaticTranslationProvider from '@/lib/StaticTranslationProvider'
 import './globals.css'
 
 const cormorant = Cormorant_Garamond({
@@ -13,17 +15,20 @@ const dmMono = DM_Mono({
 const outfit = Outfit({
   subsets: ['latin'], weight: ['200','300','400','500'], variable: '--font-sans',
 })
+const notoArmenian = Noto_Sans_Armenian({
+  subsets: ['armenian'], weight: ['300','400','500'], variable: '--font-armenian',
+})
 
 export const metadata: Metadata = {
-  title: 'ArmNair — Недвижимость Еревана',
-  description: 'ArmNair — агрегатор жилых комплексов Еревана. Смотрите рынок недвижимости Армении насквозь.',
+  title: 'ArmNair — Real Estate Yerevan',
+  description: 'ArmNair — Yerevan residential complex aggregator. Up-to-date data on the Armenian real estate market.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
-        {/* Prevent flash of wrong theme */}
+        {/* Prevent flash of wrong theme/lang */}
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
             var t = localStorage.getItem('armnair-theme') || 'light';
@@ -31,10 +36,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           })()
         `}} />
       </head>
-      <body className={`${cormorant.variable} ${dmMono.variable} ${outfit.variable}`}>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+      <body className={`${cormorant.variable} ${dmMono.variable} ${outfit.variable} ${notoArmenian.variable}`}>
+        <LanguageProvider>
+          <StaticTranslationProvider>
+            <ThemeProvider>
+              {children}
+            </ThemeProvider>
+          </StaticTranslationProvider>
+        </LanguageProvider>
       </body>
     </html>
   )
