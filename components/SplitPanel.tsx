@@ -55,8 +55,24 @@ export default function SplitPanel({ id, complexes, isLoading = false, openMobil
   const [mapFullscreen, setMapFullscreen] = useState(false)
   const isMobile = useIsMobile()
 
+  // On mobile: show map fullscreen — cards are accessible via Catalog tab
+  if (isMobile) {
+    return (
+      <div id={id} style={{ height: 'calc(100dvh - 128px)', position: 'relative' }}>
+        <MapPanel
+          complexes={complexes}
+          onMarkerClick={onCardClick}
+          theme={theme}
+          hoveredId={hoveredId}
+          mapFocusId={mapFocusId}
+          onMapFocusDone={onMapFocusDone}
+        />
+      </div>
+    )
+  }
+
   return (
-    <div id={id} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start' }}>
+    <div id={id} style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
       {/* Cards panel */}
       <div style={{
         flexShrink: 0,
