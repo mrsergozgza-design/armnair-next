@@ -33,6 +33,7 @@ export default function Home() {
   const [filters, setFilters]   = useState<Filters>(DEFAULT_FILTERS)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [consultOpen, setConsultOpen] = useState(false)
+  const [mobileMapTrigger, setMobileMapTrigger] = useState(0)
   const [mapFocusId, setMapFocusId] = useState<string | null>(null)
   const [pendingPropertyId, setPendingPropertyId] = useState<string | null>(null)
   const [page, setPage]         = useState<'home' | 'analytics' | 'catalog'>('home')
@@ -191,7 +192,7 @@ export default function Home() {
             <Hero />
             <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />
             <StatsRow data={data} />
-            <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} />
+            <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} />
             <footer style={{
               borderTop:'1px solid var(--border-c)',
               background:'var(--bg)',
@@ -220,12 +221,17 @@ export default function Home() {
         onOpenMap={(id: string) => {
           setSelectedId(null)
           setMapFocusId(id)
-          if (page !== 'home') {
-            setPage('home')
-            setTimeout(() => document.getElementById('right-panel')?.scrollIntoView({ behavior:'smooth' }), 250)
-          } else {
-            setTimeout(() => document.getElementById('right-panel')?.scrollIntoView({ behavior:'smooth' }), 100)
-          }
+          const isMobile = window.innerWidth < 768
+          const delay = page !== 'home' ? 250 : 100
+          if (page !== 'home') setPage('home')
+          setTimeout(() => {
+            if (isMobile) {
+              setMobileMapTrigger(t => t + 1)
+              document.getElementById('split-panel')?.scrollIntoView({ behavior: 'smooth' })
+            } else {
+              document.getElementById('right-panel')?.scrollIntoView({ behavior: 'smooth' })
+            }
+          }, delay)
         }}
       />
       <ConsultModal open={consultOpen} onClose={() => setConsultOpen(false)} propertyName={selectedComplex?.name} />

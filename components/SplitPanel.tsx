@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { Map, Maximize2, Minimize2 } from 'lucide-react'
 import { Complex } from '@/lib/types'
@@ -28,6 +28,7 @@ interface Props {
   id?: string
   complexes: Complex[]
   isLoading?: boolean
+  openMobileMap?: number   // increment to programmatically open mobile map
   onCardClick: (id: string) => void
   mapFocusId?: string | null
   onMapFocusDone?: () => void
@@ -40,12 +41,17 @@ interface Props {
   onShareFavorites?: () => void
 }
 
-export default function SplitPanel({ id, complexes, isLoading = false, onCardClick, mapFocusId, onMapFocusDone, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites }: Props) {
+export default function SplitPanel({ id, complexes, isLoading = false, openMobileMap = 0, onCardClick, mapFocusId, onMapFocusDone, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites }: Props) {
   const { theme } = useTheme()
-  
+
   const tr = useT()
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [mapOpen, setMapOpen] = useState(false)
+
+  // Open mobile map when parent requests it (openMobileMap counter increments)
+  useEffect(() => {
+    if (openMobileMap > 0) setMapOpen(true)
+  }, [openMobileMap])
   const [mapFullscreen, setMapFullscreen] = useState(false)
   const isMobile = useIsMobile()
 
