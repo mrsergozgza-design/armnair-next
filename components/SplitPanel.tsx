@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import { Map, Maximize2, Minimize2 } from 'lucide-react'
 import { Complex } from '@/lib/types'
 import PropertyCard from './PropertyCard'
+import PropertyCardSkeleton from './PropertyCardSkeleton'
 import { useTheme } from './ThemeProvider'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { useT } from '@/lib/StaticTranslationProvider'
@@ -26,6 +27,7 @@ const MapPanel = dynamic(() => import('./MapPanel'), {
 interface Props {
   id?: string
   complexes: Complex[]
+  isLoading?: boolean
   onCardClick: (id: string) => void
   mapFocusId?: string | null
   onMapFocusDone?: () => void
@@ -38,7 +40,7 @@ interface Props {
   onShareFavorites?: () => void
 }
 
-export default function SplitPanel({ id, complexes, onCardClick, mapFocusId, onMapFocusDone, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites }: Props) {
+export default function SplitPanel({ id, complexes, isLoading = false, onCardClick, mapFocusId, onMapFocusDone, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites }: Props) {
   const { theme } = useTheme()
   
   const tr = useT()
@@ -137,7 +139,11 @@ export default function SplitPanel({ id, complexes, onCardClick, mapFocusId, onM
           </button>
         )}
 
-        {complexes.length === 0 ? (
+        {isLoading ? (
+          <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 12 : 14 }}>
+            {Array.from({ length: 6 }).map((_, i) => <PropertyCardSkeleton key={i} />)}
+          </div>
+        ) : complexes.length === 0 ? (
           <div style={{
             display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
             minHeight: 300, gap: 16,
