@@ -299,10 +299,7 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
           </p>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: fresh.stale ? 'var(--tm)' : 'var(--teal)', letterSpacing: '0.04em' }}>
-            {fresh.label ?? '—'}
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: 3 }}>
             {tr('card.more')} <ArrowRight size={10} />
           </span>
