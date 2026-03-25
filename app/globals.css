@@ -144,6 +144,17 @@ html[data-lang="am"] td {
   line-height: 1.65;
 }
 
+/* ── Skeleton loader ────────────────────────────────────────── */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+.skeleton-pulse {
+  background: #e5e7eb;
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+html.dark .skeleton-pulse { background: #374151; }
+
 /* ── Scroll lock ────────────────────────────────────────────── */
 body.modal-open { overflow: hidden; }
 

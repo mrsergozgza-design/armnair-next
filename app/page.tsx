@@ -29,10 +29,12 @@ export default function Home() {
   const { lang } = useLang()
   const tr = useT()
   const [data, setData]         = useState<Complex[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters]   = useState<Filters>(DEFAULT_FILTERS)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [consultOpen, setConsultOpen] = useState(false)
   const [mapFocusId, setMapFocusId] = useState<string | null>(null)
+  const [pendingPropertyId, setPendingPropertyId] = useState<string | null>(null)
   const [page, setPage]         = useState<'home' | 'analytics' | 'catalog'>('home')
   const [favOnly, setFavOnly]       = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
@@ -44,9 +46,37 @@ export default function Home() {
   useEffect(() => {
     fetch('/api/properties')
       .then(r => r.ok ? r.json() : null)
-      .then(j => setData(j?.complexes ?? FALLBACK))
-      .catch(() => setData(FALLBACK))
+      .then(j => { setData(j?.complexes ?? FALLBACK); setIsLoading(false) })
+      .catch(() => { setData(FALLBACK); setIsLoading(false) })
   }, [])
+
+  // Read ?property= from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const id = params.get('property')
+    if (id) setPendingPropertyId(id)
+  }, [])
+
+  // Open modal once data is loaded and a pending property id is set
+  useEffect(() => {
+    if (pendingPropertyId && data.length > 0) {
+      setSelectedId(pendingPropertyId)
+      setPendingPropertyId(null)
+    }
+  }, [data, pendingPropertyId])
+
+  // Sync ?property= param with open modal
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const url = new URL(window.location.href)
+    if (selectedId) {
+      url.searchParams.set('property', selectedId)
+      window.history.pushState(null, '', url.toString())
+    } else if (url.searchParams.has('property')) {
+      url.searchParams.delete('property')
+      window.history.replaceState(null, '', url.toString())
+    }
+  }, [selectedId])
 
   // Detect ?shared=... in URL → collection mode
   useEffect(() => {
@@ -156,7 +186,7 @@ export default function Home() {
       {page === 'analytics'
         ? <AnalyticsPage data={data} onOpenModal={setSelectedId} onBack={() => setPage('home')} />
         : page === 'catalog'
-        ? <CatalogPage data={data} onOpenModal={setSelectedId} onBack={() => setPage('home')} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} />
+        ? <CatalogPage data={data} isLoading={isLoading} onOpenModal={setSelectedId} onBack={() => setPage('home')} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} />
         : <>
             <Hero />
             <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />

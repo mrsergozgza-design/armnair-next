@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { X, Download, TrendingUp, Phone, MessageCircle, Heart, GitCompare, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Train, Trees, GraduationCap, ShoppingBag, Building2, Dumbbell, MapPin, Utensils, Car } from 'lucide-react'
+import { X, Download, TrendingUp, Phone, MessageCircle, Heart, GitCompare, Link2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Train, Trees, GraduationCap, ShoppingBag, Building2, Dumbbell, MapPin, Utensils, Car } from 'lucide-react'
 import { Complex } from '@/lib/types'
 import { fmtAmd, fmtDate, statusStyle, parseYield, priceGrowth } from '@/lib/utils'
 import { useTheme } from './ThemeProvider'
@@ -59,6 +59,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   const [salary, setSalary] = useState(600000)
   const [mounted, setMounted] = useState(false)
   const [heartAnim, setHeartAnim] = useState(false)
+  const [toast, setToast] = useState(false)
   const [heroIdx, setHeroIdx] = useState(0)
   const [developerExpanded, setDeveloperExpanded] = useState(false)
 
@@ -278,6 +279,26 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
             cursor: 'pointer', color: '#C9A96E',
           }}>
             <X size={15} />
+          </button>
+
+          {/* Share */}
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href).then(() => {
+                setToast(true)
+                setTimeout(() => setToast(false), 2000)
+              })
+            }}
+            title="Скопировать ссылку"
+            style={{
+              position: 'absolute', top: isMobile ? 8 : 14, right: 134, zIndex: 10,
+              background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(139,105,20,0.2)',
+              borderRadius: '50%', width: 32, height: 32,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', transition: 'background 0.2s',
+            }}
+          >
+            <Link2 size={14} color="#C9A96E" />
           </button>
 
           {/* Compare */}
@@ -720,6 +741,20 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
             </div>
           </div>
         </div>{/* end scrollable */}
+
+        {/* Toast: link copied */}
+        {toast && (
+          <div style={{
+            position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+            background: 'rgba(30,30,30,0.92)', border: '1px solid rgba(201,169,110,0.3)',
+            borderRadius: 4, padding: '0.5rem 1.1rem',
+            fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.08em',
+            color: '#C9A96E', whiteSpace: 'nowrap', zIndex: 20,
+            pointerEvents: 'none',
+          }}>
+            Ссылка скопирована
+          </div>
+        )}
 
         {/* Sticky CTA footer (mobile only) */}
         {isMobile && (

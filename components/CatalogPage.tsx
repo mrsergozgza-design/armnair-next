@@ -4,6 +4,7 @@ import { Complex } from '@/lib/types'
 import { fmtAmd, statusStyle, freshLabel, priceGrowth, parseYield } from '@/lib/utils'
 import FilterBar from './FilterBar'
 import PropertyCard from './PropertyCard'
+import PropertyCardSkeleton from './PropertyCardSkeleton'
 import { ArrowUpDown } from 'lucide-react'
 import { useT } from '@/lib/StaticTranslationProvider'
 
@@ -18,6 +19,7 @@ type SortKey = 'default' | 'price_asc' | 'price_desc' | 'yield_desc'
 
 interface Props {
   data: Complex[]
+  isLoading?: boolean
   onOpenModal: (id: string) => void
   onBack: () => void
   favorites?: Set<string>
@@ -29,7 +31,7 @@ interface Props {
   onShareFavorites?: () => void
 }
 
-export default function CatalogPage({ data, onOpenModal, onBack, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites }: Props) {
+export default function CatalogPage({ data, isLoading = false, onOpenModal, onBack, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites }: Props) {
   const tr = useT()
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [sort, setSort] = useState<SortKey>('default')
@@ -126,7 +128,15 @@ export default function CatalogPage({ data, onOpenModal, onBack, favorites, onTo
 
       {/* Grid */}
       <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 2rem 4rem' }}>
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: 20,
+          }}>
+            {Array.from({ length: 6 }).map((_, i) => <PropertyCardSkeleton key={i} />)}
+          </div>
+        ) : filtered.length === 0 ? (
           <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             minHeight: 380, gap: 16,
