@@ -67,8 +67,8 @@ export default function Hero() {
           opacity: mounted ? 1 : 0, transform: mounted ? 'translateY(0)' : 'translateY(16px)',
           transition:'opacity 0.7s ease 0.35s, transform 0.7s ease 0.35s',
         }}>
-          <p style={{ fontFamily:'var(--font-serif)', fontStyle:'italic', fontSize:'0.95rem', color:'var(--t3)', lineHeight:1.65, margin:0 }}>
-            <span style={{ color:'var(--gold-b)' }}>Nair</span> — {tr('hero.quoteNair')} {tr('hero.quoteText')}
+          <p style={{ fontFamily:'var(--font-serif)', fontStyle:'italic', fontSize:'1.05rem', color:'var(--t2)', lineHeight:1.65, margin:0 }}>
+            <span style={{ color:'var(--gold-b)', fontSize:'1.35rem', fontStyle:'normal', fontWeight:600 }}>Nair</span> {tr('hero.quote')}
           </p>
         </div>
       </div>

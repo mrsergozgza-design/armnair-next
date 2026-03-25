@@ -146,8 +146,7 @@ const T: Dict = {
   // ── Hero ──────────────────────────────────────────────────────────────
   'hero.badge':      { en: 'Yerevan · Armenia · 2026',     ru: 'Ереван · Армения · 2026',      am: 'Yerevan · Armenia · 2026' },
   'hero.subtitle':   { en: 'Yerevan residential complex aggregator. Up-to-date data on the Armenian real estate market — prices, yields, tax refunds.', ru: 'Агрегатор жилых комплексов Еревана. Актуальные данные о рынке недвижимости Армении — цены, доходность, налоговый возврат.', am: 'Yerevan residential complex aggregator. Up-to-date data on the Armenian real estate market — prices, yields, tax refunds.' },
-  'hero.quoteNair':  { en: '"Nair" means "look" in Armenian.', ru: '"Nair" — «смотри» на армянском.', am: '"Nair" means "look" in Armenian.' },
-  'hero.quoteText':  { en: 'We help you see the Yerevan real estate market clearly.', ru: 'Мы помогаем увидеть рынок недвижимости Еревана насквозь.', am: 'We help you see the Yerevan real estate market clearly.' },
+  'hero.quote':      { en: '— “Look”. We help you see the real estate market clearly.', ru: '— «Смотри». Мы помогаем видеть рынок недвижимости насквозь.', am: '— «Նայիր»։ Մենք օգնում ենք տեսնել անշառժ գույքի շուկանի ներսից։' },
 
   // ── MobileTabBar ──────────────────────────────────────────────────────
   'tab.home':        { en: 'HOME',      ru: 'ГЛАВНАЯ',   am: 'HOME' },

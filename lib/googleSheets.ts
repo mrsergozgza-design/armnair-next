@@ -1,8 +1,12 @@
 import Papa from 'papaparse'
-import type { Complex } from './types'
+import type { Complex, PricePoint } from './types'
 
+const SPREADSHEET_ID = '1aJrXXy9P29U93reIW_V_nlPzu3axy5IGnXOmO5ETTNE'
 // Первый лист — доступен без gid
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/1aJrXXy9P29U93reIW_V_nlPzu3axy5IGnXOmO5ETTNE/export?format=csv'
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv`
+// /gviz/tq?tqx=out:csv поддерживает выбор листа по имени через &sheet=
+// (в отличие от /export?format=csv, который игнорирует параметр sheet)
+const PRICE_HISTORY_CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Price%20History`
 
 /**
  * Колонки листа (первая строка):
@@ -148,10 +152,47 @@ function rowToComplex(row: Record<string, string>): Complex | null {
   }
 }
 
+async function fetchPriceHistory(): Promise<Record<string, PricePoint[]>> {
+  const url = process.env.GOOGLE_SHEET_PRICE_HISTORY_CSV_URL ?? PRICE_HISTORY_CSV_URL
+  try {
+    const res = await fetch(url, { cache: 'no-store' })
+    if (!res.ok) {
+      console.warn('[googleSheets] Price History fetch failed:', res.status)
+      return {}
+    }
+    const csvText = await res.text()
+    const { data } = Papa.parse<Record<string, string>>(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: h => h.trim().toLowerCase().replace(/[\s,()]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''),
+    })
+    const map: Record<string, PricePoint[]> = {}
+    for (const row of data) {
+      const projectId = row['project_id']?.trim()
+      const date = row['date']?.trim()
+      const price = parseNum(row['price_per_m2'])
+      if (!projectId || !date || !price) continue
+      if (!map[projectId]) map[projectId] = []
+      map[projectId].push({ month: date, price })
+    }
+    for (const key of Object.keys(map)) {
+      map[key].sort((a, b) => a.month.localeCompare(b.month))
+    }
+    console.log(`[googleSheets] Price History: ${Object.keys(map).length} проектов, ключи: ${Object.keys(map).join(', ')}`)
+    return map
+  } catch (err) {
+    console.warn('[googleSheets] Price History exception:', err)
+    return {}
+  }
+}
+
 export async function fetchComplexesFromSheets(): Promise<Complex[]> {
   const csvUrl = process.env.GOOGLE_SHEET_CSV_URL ?? CSV_URL
 
-  const response = await fetch(csvUrl, { next: { revalidate: 60 } })
+  const [response, priceHistory] = await Promise.all([
+    fetch(csvUrl, { next: { revalidate: 60 } }),
+    fetchPriceHistory(),
+  ])
   if (!response.ok) {
     throw new Error(`CSV fetch failed: ${response.status} ${response.statusText}`)
   }
@@ -175,6 +216,12 @@ export async function fetchComplexesFromSheets(): Promise<Complex[]> {
   const complexes = data
     .map(rowToComplex)
     .filter((c): c is Complex => c !== null)
+    .map(c => {
+      const key = Object.keys(priceHistory).find(k => k === c.name)
+        ?? Object.keys(priceHistory).find(k => k.toLowerCase() === c.name.toLowerCase())
+      const history = key ? priceHistory[key] : []
+      return history.length > 0 ? { ...c, history } : c
+    })
 
   console.log(`[googleSheets] Загружено ${complexes.length} объектов из таблицы`)
   return complexes

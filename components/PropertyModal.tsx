@@ -8,7 +8,7 @@ import { useTheme } from './ThemeProvider'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { useLang } from '@/lib/LanguageContext'
 import { useT, useTStatus } from '@/lib/StaticTranslationProvider'
-import { useAutoTranslateBatch, clearTranslationCache } from '@/lib/useAutoTranslate'
+import { useAutoTranslateBatch } from '@/lib/useAutoTranslate'
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip
@@ -39,19 +39,13 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
 
   const cacheId = `modal-${c?.id ?? '__none__'}-${lang}`
 
-  // Invalidate translation cache for long-text fields when lang or object changes,
-  // so stale Sheets data never gets served from localStorage on lang switch.
-  useEffect(() => {
-    if (!c) return
-    clearTranslationCache(cacheId, ['description', 'developer_description'], 'ru')
-  }, [cacheId])
-
   // Auto-translate dynamic text fields (source data is Russian from Google Sheets)
+  // cacheId already encodes both property id and lang — translations are cached per property+lang.
   // description/developer_description are already in Russian — skip API when lang === 'ru'
   const translated = useAutoTranslateBatch(
     {
-      description: lang !== 'ru' ? c?.description : undefined,
       developer_description: lang !== 'ru' ? c?.developer_description : undefined,
+      description: lang !== 'ru' ? c?.description : undefined,
       unit_type: c?.unit_type,
       subway_station: c?.subway_station,
     },
@@ -133,10 +127,10 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { backgroundColor: 'var(--card)', borderColor: 'rgba(160,120,32,0.3)', borderWidth: 1, titleColor: 'var(--t3)', bodyColor: '#C9A96E' } },
+    plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(30,30,30,0.9)', borderColor: 'rgba(160,120,32,0.3)', borderWidth: 1, titleColor: '#ffffff', bodyColor: '#ffffff', displayColors: false, callbacks: { title: (items) => items[0] ? Number(items[0].raw).toLocaleString() + ' ֏' : '', label: (item) => item.label } } },
     scales: {
-      x: { grid: { color: 'rgba(160,120,32,0.1)' }, ticks: { color: 'var(--tm)', font: { family: 'DM Mono', size: 10 } } },
-      y: { grid: { color: 'rgba(160,120,32,0.1)' }, ticks: { color: 'var(--tm)', font: { family: 'DM Mono', size: 10 } } },
+      x: { grid: { color: 'rgba(160,120,32,0.1)' }, ticks: { color: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#374151', font: { family: 'DM Mono', size: 10 } } },
+      y: { grid: { color: 'rgba(160,120,32,0.1)' }, ticks: { color: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#374151', font: { family: 'DM Mono', size: 10 } } },
     },
   }
 

@@ -190,10 +190,11 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
 
         <div style={{
           position: 'absolute', top: 10, right: 10,
-          background: ss.bg, border: `1px solid ${ss.border}`,
+          background: 'rgba(0,0,0,0.55)', border: 'none',
+          backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
           borderRadius: 2, padding: '2px 8px',
           fontFamily: 'var(--font-mono)', fontSize: '0.56rem',
-          letterSpacing: '0.06em', color: ss.color,
+          letterSpacing: '0.06em', color: '#ffffff',
         }}>{tStatus(c.status)}</div>
 
         {/* Compare button */}

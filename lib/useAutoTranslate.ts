@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Lang } from './LanguageContext'
 
-const CACHE_PREFIX = 'armnair_tx_v2_'  // v2: cache key includes sourceLang
+const CACHE_PREFIX = 'armnair_tx_v4_'  // bump to invalidate stale/bad cached translations
 const LANG_CODE: Record<Lang, string> = { en: 'en', ru: 'ru', am: 'hy' }
 const CHUNK_MAX = 450  // MyMemory's safe per-request limit
 
@@ -66,10 +66,11 @@ async function translateChunk(text: string, sourceLang: Lang, targetLang: Lang, 
   const json = await res.json()
   const result: string = json?.responseData?.translatedText
   if (!result || json?.responseStatus !== 200) throw new Error('No translation')
-  const restored = restoreBrands(result)
-  // Guard for short strings only: if translation is suspiciously longer, API likely added garbage
-  if (text.length < 80 && restored.length > text.length + 3) return text
-  return restored
+  // Detect MyMemory quota/error messages — don't use or cache them
+  if (result.toUpperCase().includes('MYMEMORY WARNING') || result.toUpperCase().startsWith('PLEASE SELECT')) {
+    throw new Error('API quota or config error')
+  }
+  return restoreBrands(result)
 }
 
 /** Translate text, splitting into chunks if it exceeds the API limit. */
@@ -146,47 +147,46 @@ export function useAutoTranslateBatch(
   const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
-    const entries = Object.entries(fields).filter(([, v]) => v)
+    const entries = Object.entries(fields).filter(([, v]) => !!v) as [string, string][]
 
     if (targetLang === sourceLang) {
       const out: Record<string, string> = {}
-      entries.forEach(([k, v]) => { out[k] = v ?? '' })
+      entries.forEach(([k, v]) => { out[k] = v })
       setResult(out)
       return
     }
 
-    // Load cached immediately
+    // Load cached immediately, collect missing
     const out: Record<string, string> = {}
-    const missing: string[] = []
+    const missingValues: [string, string][] = []
     entries.forEach(([k, v]) => {
       const key = cacheKey(cacheId, k, sourceLang, targetLang)
       const cached = readCache(key)
-      if (cached) { out[k] = cached } else { out[k] = v ?? ''; missing.push(k) }
+      if (cached) { out[k] = cached } else { out[k] = v; missingValues.push([k, v]) }
     })
     setResult({ ...out })
 
-    if (missing.length === 0) return
+    if (missingValues.length === 0) return
 
     abortRef.current?.abort()
     const ctrl = new AbortController()
     abortRef.current = ctrl
 
     // Translate missing fields sequentially (to respect rate limits for chunked texts)
+    // Values captured at effect-run time — no stale closure issue
     ;(async () => {
-      for (let i = 0; i < missing.length; i++) {
+      for (let i = 0; i < missingValues.length; i++) {
         if (ctrl.signal.aborted) return
-        const k = missing[i]
-        const v = fields[k]
-        if (!v) continue
+        const [k, v] = missingValues[i]
         try {
           const translated = await translateText(v, sourceLang, targetLang, ctrl.signal)
           const key = cacheKey(cacheId, k, sourceLang, targetLang)
           writeCache(key, translated)
           setResult(prev => ({ ...prev, [k]: translated }))
         } catch {
-          // Fallback: keep original text, do not cache (includes AbortError)
+          // Fallback: keep original text, do not cache (includes AbortError and quota errors)
         }
-        if (i < missing.length - 1) {
+        if (i < missingValues.length - 1) {
           await new Promise(r => setTimeout(r, 200))
         }
       }
@@ -196,7 +196,6 @@ export function useAutoTranslateBatch(
   }, [targetLang, sourceLang, cacheId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Bypass stale state — return originals synchronously when no translation needed.
-  // This prevents a flash of the previous language's translation during lang switches.
   if (targetLang === sourceLang) {
     const out: Record<string, string> = {}
     Object.entries(fields).forEach(([k, v]) => { if (v) out[k] = v })
