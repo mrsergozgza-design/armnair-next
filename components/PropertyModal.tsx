@@ -128,7 +128,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(30,30,30,0.9)', borderColor: 'rgba(160,120,32,0.3)', borderWidth: 1, titleColor: '#ffffff', bodyColor: '#ffffff', displayColors: false, callbacks: { title: (items) => items[0] ? Number(items[0].raw).toLocaleString() + ' ֏' : '', label: (item) => item.label } } },
+    plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(30,30,30,0.9)', borderColor: 'rgba(160,120,32,0.3)', borderWidth: 1, titleColor: '#ffffff', bodyColor: '#ffffff', displayColors: false, callbacks: { title: (items: import('chart.js').TooltipItem<'line'>[]) => items[0] ? Number(items[0].raw).toLocaleString() + ' ֏' : '', label: (item: import('chart.js').TooltipItem<'line'>) => item.label } } },
     scales: {
       x: { grid: { color: 'rgba(160,120,32,0.1)' }, ticks: { color: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#374151', font: { family: 'DM Mono', size: 10 } } },
       y: { grid: { color: 'rgba(160,120,32,0.1)' }, ticks: { color: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#374151', font: { family: 'DM Mono', size: 10 } } },
