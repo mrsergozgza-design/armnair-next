@@ -3,6 +3,7 @@ import { MapPin, Search, X } from 'lucide-react'
 import { Complex } from '@/lib/types'
 import { useLang } from '@/lib/LanguageContext'
 import { useT, useTStatus, useTDistrict } from '@/lib/StaticTranslationProvider'
+import { useIsMobile } from '@/lib/useIsMobile'
 
 interface Filters {
   district: string; developer: string; price: number
@@ -16,6 +17,7 @@ interface FilterBarProps {
 }
 
 export default function FilterBar({ filters, onFiltersChange, resultCount, data }: FilterBarProps) {
+  const isMobile = useIsMobile()
   const { lang } = useLang()
   const tr = useT()
   const tStatus = useTStatus()
@@ -43,7 +45,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
       borderBottom:'1px solid var(--border-c)',
       transition:'background 0.25s, border-color 0.25s',
     }}>
-      <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', padding:'0.6rem 2rem' }}>
+      <div style={{ display:'flex', alignItems:'center', gap: isMobile ? 5 : 8, flexWrap:'wrap', padding: isMobile ? '0.5rem 0.75rem' : '0.6rem 2rem' }}>
         {/* City pill */}
         <div style={{
           display:'flex', alignItems:'center', gap:5,
@@ -63,7 +65,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
           display:'flex', alignItems:'center', gap:6,
           border:'1px solid var(--border-c)', borderRadius:100,
           padding:'0.3rem 0.75rem', background:'var(--input-bg)',
-          minWidth:160, transition:'border-color 0.2s, background 0.25s',
+          minWidth: isMobile ? 100 : 160, transition:'border-color 0.2s, background 0.25s',
         }}>
           <Search size={11} color="var(--t3)" />
           <input
@@ -71,8 +73,8 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
             onChange={e => set('search', e.target.value)}
             style={{
               background:'none', border:'none', outline:'none',
-              fontFamily:'var(--font-mono)', fontSize:'0.72rem',
-              color:'var(--t2)', width:120, letterSpacing:'0.04em',
+              fontFamily:'var(--font-mono)', fontSize: isMobile ? '0.62rem' : '0.72rem',
+              color:'var(--t2)', width: isMobile ? 70 : 120, letterSpacing:'0.04em',
             }}
           />
           {filters.search && (

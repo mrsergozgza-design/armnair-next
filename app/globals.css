@@ -172,6 +172,12 @@ body.modal-open { overflow: hidden; }
   /* Navbar: only logo + theme on mobile */
   .nav-center   { display: none !important; }
   .nav-right-extra { display: none !important; }
+
+  /* FilterBar: compact pills on mobile */
+  .pill-sel {
+    font-size: 0.62rem !important;
+    padding: .26rem 1.5rem .26rem .55rem !important;
+  }
 }
 
 /* ── Pill selects ───────────────────────────────────────────── */
