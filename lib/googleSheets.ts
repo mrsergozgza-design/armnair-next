@@ -155,7 +155,7 @@ function rowToComplex(row: Record<string, string>): Complex | null {
 async function fetchPriceHistory(): Promise<Record<string, PricePoint[]>> {
   const url = process.env.GOOGLE_SHEET_PRICE_HISTORY_CSV_URL ?? PRICE_HISTORY_CSV_URL
   try {
-    const res = await fetch(url, { cache: 'no-store' })
+    const res = await fetch(url, { next: { revalidate: 60 } })
     if (!res.ok) {
       console.warn('[googleSheets] Price History fetch failed:', res.status)
       return {}
