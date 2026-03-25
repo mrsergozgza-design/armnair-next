@@ -133,7 +133,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
         </button>
 
         {/* Language switcher */}
-        <div className="nav-right-extra" style={{
+        <div style={{
           display: 'flex', alignItems: 'center', gap: 3,
           background: 'rgba(160,120,32,0.06)',
           backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
