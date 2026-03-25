@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Complex } from '@/lib/types'
 import { FALLBACK } from '@/lib/data'
 import { useFavorites } from '@/lib/useFavorites'
@@ -37,6 +37,7 @@ export default function Home() {
   const [mapFocusId, setMapFocusId] = useState<string | null>(null)
   const [pendingPropertyId, setPendingPropertyId] = useState<string | null>(null)
   const [page, setPage]         = useState<'home' | 'analytics' | 'catalog'>('home')
+  const [scrolled, setScrolled]     = useState(false)
   const [favOnly, setFavOnly]       = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
   const [collectionMode, setCollectionMode] = useState(false)
@@ -49,6 +50,12 @@ export default function Home() {
       .then(r => r.ok ? r.json() : null)
       .then(j => { setData(j?.complexes ?? FALLBACK); setIsLoading(false) })
       .catch(() => { setData(FALLBACK); setIsLoading(false) })
+  }, [])
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 300)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   // Read ?property= from URL on mount
@@ -235,6 +242,24 @@ export default function Home() {
         }}
       />
       <ConsultModal open={consultOpen} onClose={() => setConsultOpen(false)} propertyName={selectedComplex?.name} />
+
+      {/* Back to top button */}
+      <button
+        aria-label={tr('page.backToTop')}
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        style={{
+          position: 'fixed', bottom: 80, right: 16, zIndex: 500,
+          width: 40, height: 40, borderRadius: '50%',
+          background: '#b8942a', border: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+          opacity: scrolled ? 1 : 0,
+          pointerEvents: scrolled ? 'auto' : 'none',
+          transition: 'opacity 0.25s',
+        }}
+      >
+        <span style={{ color: '#fff', fontSize: '1.1rem', lineHeight: 1, marginTop: -2 }}>↑</span>
+      </button>
       {compareOpen && compareComplexes.length > 0 && (
         <ComparisonModal
           complexes={compareComplexes}

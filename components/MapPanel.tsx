@@ -94,7 +94,7 @@ export default function MapPanel({ complexes, onMarkerClick, theme = 'light', ho
       center={[40.1872, 44.515]}
       zoom={13}
       style={{ width:'100%', height:'100%' }}
-      zoomControl={true}
+      zoomControl={false}
       scrollWheelZoom={true}
     >
       <TileLayer url={tileUrl} attribution="© OpenStreetMap © CARTO" maxZoom={19} />

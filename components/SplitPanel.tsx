@@ -58,7 +58,7 @@ export default function SplitPanel({ id, complexes, isLoading = false, openMobil
   // On mobile: show map fullscreen — cards are accessible via Catalog tab
   if (isMobile) {
     return (
-      <div id={id} style={{ height: 'calc(100dvh - 128px)', position: 'relative' }}>
+      <div id={id} style={{ height: '40vh', position: 'relative' }}>
         <MapPanel
           complexes={complexes}
           onMarkerClick={onCardClick}

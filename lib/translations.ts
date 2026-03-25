@@ -29,6 +29,7 @@ const T: Dict = {
   'filter.taxYes':   { en: 'Yes',           ru: 'Есть',           am: 'Yes' },
   'filter.taxNo':    { en: 'No',            ru: 'Нет',            am: 'No' },
   'filter.reset':    { en: 'Reset',         ru: 'Сброс',          am: 'Reset' },
+  'page.backToTop':  { en: 'Back to top',   ru: 'Наверх',         am: 'Վերև' },
   'filter.objects':  { en: 'objects',       ru: 'объект',         am: 'objects' },
   'filter.objects2': { en: 'objects',       ru: 'объекта',        am: 'objects' },
   'filter.objectsN': { en: 'objects',       ru: 'объектов',       am: 'objects' },

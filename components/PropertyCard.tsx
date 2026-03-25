@@ -60,6 +60,7 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
         overflow: 'hidden', cursor: 'pointer',
         transition: 'border-color 0.28s, transform 0.28s, box-shadow 0.28s, background 0.25s',
         borderRadius: 2, boxShadow: favShadow,
+        touchAction: 'manipulation',
       }}
       onMouseEnter={e => {
         e.currentTarget.style.borderColor = 'rgba(160,120,32,0.4)'

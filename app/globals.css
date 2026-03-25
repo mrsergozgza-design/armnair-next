@@ -177,6 +177,9 @@ body.modal-open { overflow: hidden; }
   .pill-sel {
     font-size: 0.62rem !important;
     padding: .26rem 1.5rem .26rem .55rem !important;
+    white-space: nowrap !important;
+    flex: 0 0 auto !important;
+    max-width: 120px !important;
   }
 }
 
