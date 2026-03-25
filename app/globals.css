@@ -172,6 +172,7 @@ body.modal-open { overflow: hidden; }
   /* Navbar: only logo + theme on mobile */
   .nav-center   { display: none !important; }
   .nav-right-extra { display: none !important; }
+  .nav-logo-sub { font-size: 10px !important; white-space: nowrap !important; }
 
   /* FilterBar: compact pills on mobile */
   .pill-sel {

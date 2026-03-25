@@ -69,7 +69,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
           <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 400, color: 'var(--t1)', letterSpacing: '0.04em' }}>
             ArmNair
           </span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.54rem', color: 'var(--gold)', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 2 }}>
+          <span className="nav-logo-sub" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.54rem', color: 'var(--gold)', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 2 }}>
             {tr('nav.yerevan')}
           </span>
         </div>
