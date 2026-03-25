@@ -52,13 +52,13 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
       borderBottom: '1px solid var(--border-c)',
       height: 64,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 2rem',
+      padding: '0 1rem',
       transition: 'background 0.25s, border-color 0.25s',
     }}>
       {/* Logo */}
       <button
         onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); onNav('home') }}
-        style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer' }}
+        style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, minWidth: 0 }}
       >
         <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
           <polygon points="14,2 26,9 26,19 14,26 2,19 2,9" fill="none" stroke="var(--gold)" strokeWidth="1.5"/>
@@ -114,7 +114,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
       </div>
 
       {/* Right side */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         {/* Search — hidden on mobile */}
         <button className="nav-right-extra"
           onClick={() => {
