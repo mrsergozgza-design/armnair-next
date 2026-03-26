@@ -2,9 +2,9 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Lang } from './LanguageContext'
 
-const CACHE_PREFIX = 'armnair_tx_v4_'  // bump to invalidate stale/bad cached translations
+const CACHE_PREFIX = 'armnair_tx_v5_'  // bumped: switched to Google Translate API
 const LANG_CODE: Record<Lang, string> = { en: 'en', ru: 'ru', am: 'hy' }
-const CHUNK_MAX = 450  // MyMemory's safe per-request limit
+const CHUNK_MAX = 4500  // Google Translate safe per-request limit
 
 function cacheKey(id: string, field: string, sourceLang: Lang, targetLang: Lang) {
   return `${CACHE_PREFIX}${id}_${field}_${sourceLang}_${targetLang}`
@@ -59,17 +59,19 @@ function restoreBrands(text: string): string {
 
 async function translateChunk(text: string, sourceLang: Lang, targetLang: Lang, signal?: AbortSignal): Promise<string> {
   const protected_ = protectBrands(text)
-  const langPair = `${LANG_CODE[sourceLang]}|${LANG_CODE[targetLang]}`
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(protected_)}&langpair=${langPair}`
-  const res = await fetch(url, { signal })
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_TRANSLATE_API_KEY
+  if (!apiKey) throw new Error('Missing NEXT_PUBLIC_GOOGLE_TRANSLATE_API_KEY')
+  const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ q: protected_, source: LANG_CODE[sourceLang], target: LANG_CODE[targetLang] }),
+    signal,
+  })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const json = await res.json()
-  const result: string = json?.responseData?.translatedText
-  if (!result || json?.responseStatus !== 200) throw new Error('No translation')
-  // Detect MyMemory quota/error messages — don't use or cache them
-  if (result.toUpperCase().includes('MYMEMORY WARNING') || result.toUpperCase().startsWith('PLEASE SELECT')) {
-    throw new Error('API quota or config error')
-  }
+  const result: string = json?.data?.translations?.[0]?.translatedText
+  if (!result) throw new Error('No translation')
   return restoreBrands(result)
 }
 
@@ -90,7 +92,7 @@ async function translateText(text: string, sourceLang: Lang, targetLang: Lang, s
 /** Auto-translate a single text field, with localStorage caching.
  *  - If targetLang === sourceLang → return original immediately.
  *  - If cached → return from cache.
- *  - Otherwise → call MyMemory API (with chunking for long texts) and cache result.
+ *  - Otherwise → call Google Translate API (with chunking for long texts) and cache result.
  *  - On error → return original text (graceful fallback).
  */
 export function useAutoTranslate(
