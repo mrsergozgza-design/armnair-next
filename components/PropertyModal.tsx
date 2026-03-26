@@ -54,7 +54,6 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
     'ru'
   )
   const [units, setUnits] = useState<Unit[]>([])
-  const [unitsLimit, setUnitsLimit] = useState(5)
   const [unitsTypeFilter, setUnitsTypeFilter] = useState('all')
 
   const fetchUnitsForProperty = useCallback(async (name: string) => {
@@ -89,7 +88,6 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
       setMounted(true)
       setDeveloperExpanded(false)
       setUnits([])
-      setUnitsLimit(5)
       setUnitsTypeFilter('all')
       document.body.classList.add('modal-open')
       fetchUnitsForProperty(c.name)
@@ -111,8 +109,6 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   // ── Units derived data (computed at component level for use in both columns) ──
   const unitTypes = Array.from(new Set(units.map(u => u.type)))
   const filteredUnits = unitsTypeFilter === 'all' ? units : units.filter(u => u.type === unitsTypeFilter)
-  const visibleUnits = filteredUnits.slice(0, unitsLimit)
-  const unitsHasMore = unitsLimit < filteredUnits.length
   const minUnitPrice = units.length ? Math.min(...units.map(u => u.price_usd)) : 0
   const maxUnitPrice = units.length ? Math.max(...units.map(u => u.price_usd)) : 0
   const minUnitArea  = units.length ? Math.min(...units.map(u => u.area_m2))  : 0
@@ -684,11 +680,11 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                         </div>
                       ))}
                     </div>
-                    <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-                      {visibleUnits.map((u, i) => (
+                    <div style={{ height: 350, overflowY: 'auto' }}>
+                      {filteredUnits.map((u, i) => (
                         <div key={i} style={{
                           display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                          borderBottom: i < visibleUnits.length - 1 ? '1px solid rgba(139,105,20,0.07)' : 'none',
+                          borderBottom: i < filteredUnits.length - 1 ? '1px solid rgba(139,105,20,0.07)' : 'none',
                           background: i % 2 === 0 ? 'transparent' : 'rgba(160,120,32,0.03)',
                         }}>
                           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.type}</div>
@@ -699,15 +695,6 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                       ))}
                     </div>
                   </div>
-                  {unitsHasMore && (
-                    <button
-                      onClick={() => setUnitsLimit(v => v + 10)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#A07820', letterSpacing: '0.08em', marginTop: 7, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
-                    >
-                      {tr('modal.readMore')} ({Math.min(10, filteredUnits.length - unitsLimit)})
-                      <ChevronDown size={10} />
-                    </button>
-                  )}
                 </div>
               )}
             </div>
@@ -837,7 +824,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                       {['all', ...unitTypes].map(t => {
                         const active = unitsTypeFilter === t
                         return (
-                          <button key={t} onClick={() => { setUnitsTypeFilter(t); setUnitsLimit(5) }} style={{
+                          <button key={t} onClick={() => setUnitsTypeFilter(t)} style={{
                             fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.06em',
                             padding: '3px 10px', borderRadius: 20, cursor: 'pointer',
                             border: active ? '1px solid rgba(201,169,110,0.6)' : '1px solid rgba(139,105,20,0.25)',
