@@ -59,14 +59,14 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
       {/* Logo */}
       <button
         onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); onNav('home') }}
-        style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, minWidth: 0 }}
+        style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'transparent', border: 'none', cursor: 'pointer', flexShrink: 0, minWidth: 0 }}
       >
         <Image
           src="/logo.png"
           alt="ArmNair"
           width={36}
           height={36}
-          style={{ objectFit: 'contain', filter: theme === 'light' ? 'none' : 'brightness(1.1)' }}
+          style={{ objectFit: 'contain', background: 'transparent', filter: theme === 'light' ? 'none' : 'brightness(1.1)' }}
         />
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1 }}>
           <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 400, color: 'var(--t1)', letterSpacing: '0.04em' }}>
