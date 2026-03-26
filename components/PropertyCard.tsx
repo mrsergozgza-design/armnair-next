@@ -3,7 +3,7 @@ import { memo, useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { Complex } from '@/lib/types'
 import { fmtAmd, statusStyle, freshLabel, priceGrowth } from '@/lib/utils'
-import { ArrowRight, Heart, GitCompare, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight, Heart, GitCompare, ChevronLeft, ChevronRight, Home } from 'lucide-react'
 import { useLang } from '@/lib/LanguageContext'
 import { useT, useTStatus, useTDistrict } from '@/lib/StaticTranslationProvider'
 import { useAutoTranslate } from '@/lib/useAutoTranslate'
@@ -33,6 +33,8 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
   const translatedDesc = useAutoTranslate(c.description, lang, c.id, 'description', 'ru')
   const [slideIdx, setSlideIdx] = useState(0)
   const [hovering, setHovering] = useState(false)
+  const [imgLoaded, setImgLoaded] = useState<boolean[]>([])
+  const [imgError, setImgError] = useState<boolean[]>([])
   const touchStartX = useRef(0)
 
   // Все фото уже в DOM — переключение только через opacity
@@ -103,17 +105,36 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
                   transition: 'opacity 0.3s ease',
                 }}
               >
-                <Image
-                  src={url}
-                  alt={c.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  quality={75}
-                  priority={i === 0}
-                  placeholder="blur"
-                  blurDataURL={BLUR_PLACEHOLDER}
-                  style={{ objectFit: 'cover', filter: 'brightness(var(--img-brightness))' }}
-                />
+                {imgError[i] ? (
+                  /* Error fallback — серый блок с иконкой дома */
+                  <div style={{
+                    width: '100%', height: '100%',
+                    background: 'var(--card)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Home size={32} color="var(--tm)" strokeWidth={1} />
+                  </div>
+                ) : (
+                  <>
+                    {/* Skeleton — виден пока фото не загрузилось */}
+                    {!imgLoaded[i] && (
+                      <div className="skeleton-pulse" style={{ position: 'absolute', inset: 0, zIndex: 1 }} />
+                    )}
+                    <Image
+                      src={url}
+                      alt={c.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      quality={75}
+                      priority={i === 0}
+                      placeholder="blur"
+                      blurDataURL={BLUR_PLACEHOLDER}
+                      style={{ objectFit: 'cover', filter: 'brightness(var(--img-brightness))' }}
+                      onLoad={() => setImgLoaded(prev => { const n = [...prev]; n[i] = true; return n })}
+                      onError={() => setImgError(prev => { const n = [...prev]; n[i] = true; return n })}
+                    />
+                  </>
+                )}
               </div>
             ))}
 
@@ -175,7 +196,9 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
             )}
           </>
         ) : (
-          <div style={{ width: '100%', height: '100%', background: 'var(--card)' }} />
+          <div style={{ width: '100%', height: '100%', background: 'var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Home size={32} color="var(--tm)" strokeWidth={1} />
+          </div>
         )}
 
         <div style={{ position: 'absolute', inset: 0, background: 'var(--img-overlay)', pointerEvents: 'none' }} />
