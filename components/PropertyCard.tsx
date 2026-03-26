@@ -226,7 +226,11 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
 
         {/* Compare button */}
         <button
-          onClick={e => { e.stopPropagation(); e.preventDefault(); onToggleCompare?.() }}
+          onClick={e => {
+            e.stopPropagation(); e.preventDefault()
+            onToggleCompare?.()
+            if (!inCompare) showToast(tr('toast.addedToCompare'))
+          }}
           title={inCompare ? 'Убрать из сравнения' : 'Добавить к сравнению'}
           style={{
             position: 'absolute', bottom: 10, right: 44,
