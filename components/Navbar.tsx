@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import { useState, useRef, useEffect } from 'react'
 import { Search, Phone, MessageCircle, Send, Sun, Moon, Heart, GitCompare, Globe } from 'lucide-react'
 import { useTheme } from './ThemeProvider'
@@ -60,11 +61,13 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
         onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); onNav('home') }}
         style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, minWidth: 0 }}
       >
-        <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
-          <polygon points="14,2 26,9 26,19 14,26 2,19 2,9" fill="none" stroke="var(--gold)" strokeWidth="1.5"/>
-          <polygon points="14,7 21,11 21,17 14,21 7,17 7,11" fill="var(--gold)" opacity="0.15"/>
-          <polygon points="14,10 18,12.5 18,15.5 14,18 10,15.5 10,12.5" fill="var(--gold-b)" opacity="0.7"/>
-        </svg>
+        <Image
+          src="/logo.png"
+          alt="ArmNair"
+          width={40}
+          height={40}
+          style={{ objectFit: 'contain', filter: theme === 'light' ? 'none' : 'brightness(1.1)' }}
+        />
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1 }}>
           <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 400, color: 'var(--t1)', letterSpacing: '0.04em' }}>
             ArmNair
