@@ -24,7 +24,7 @@ const T: Dict = {
   'filter.price100': { en: 'up to $100,000',ru: 'до $100 000',    am: 'up to $100,000' },
   'filter.price200': { en: 'up to $200,000',ru: 'до $200 000',    am: 'up to $200,000' },
   'filter.price500': { en: 'up to $500,000',ru: 'до $500 000',    am: 'up to $500,000' },
-  'filter.status':   { en: 'Status',        ru: 'Статус',         am: 'Status' },
+  'filter.status':   { en: 'Status',        ru: 'Статус',         am: 'Կարգավիճակը' },
   'filter.taxRefund':{ en: 'Tax refund',    ru: 'Возврат налога', am: 'Tax refund' },
   'filter.taxYes':   { en: 'Yes',           ru: 'Есть',           am: 'Yes' },
   'filter.taxNo':    { en: 'No',            ru: 'Нет',            am: 'No' },
