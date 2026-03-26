@@ -145,8 +145,8 @@ const T: Dict = {
   'compare.hint':    { en: 'Click on a property name to open its details', ru: 'Нажмите на название объекта, чтобы открыть детальную карточку', am: 'Click on a property name to open its details' },
 
   // ── Hero ──────────────────────────────────────────────────────────────
-  'hero.badge':      { en: 'Yerevan · Armenia · 2026',     ru: 'Ереван · Армения · 2026',      am: 'Yerevan · Armenia · 2026' },
-  'hero.subtitle':   { en: 'Yerevan residential complex aggregator. Up-to-date data on the Armenian real estate market — prices, yields, tax refunds.', ru: 'Агрегатор жилых комплексов Еревана. Актуальные данные о рынке недвижимости Армении — цены, доходность, налоговый возврат.', am: 'Yerevan residential complex aggregator. Up-to-date data on the Armenian real estate market — prices, yields, tax refunds.' },
+  'hero.badge':      { en: 'Yerevan · Armenia · 2026',     ru: 'Ереван · Армения · 2026',      am: 'ԵՐԵՎԱՆ · ՀԱՅԱՍՏԱՆ · 2026' },
+  'hero.subtitle':   { en: 'Yerevan residential complex aggregator. Up-to-date data on the Armenian real estate market — prices, yields, tax refunds.', ru: 'Агрегатор жилых комплексов Еревана. Актуальные данные о рынке недвижимости Армении — цены, доходность, налоговый возврат.', am: 'Երևանի բնակելի համալիրների ագրեգատոր։ Հայաստանի անշարժ գույքի շուկայի վերաբերյալ վերջին տվյալները, ներառյալ գները, եկամտաբերությունը և հարկերի վերադարձը։' },
   'hero.quote':      { en: '— “Look”. We help you see the real estate market clearly.', ru: '— «Смотри». Мы помогаем видеть рынок недвижимости насквозь.', am: '— «Նայիր»։ Մենք օգնում ենք տեսնել անշառժ գույքի շուկանի ներսից։' },
 
   // ── MobileTabBar ──────────────────────────────────────────────────────
