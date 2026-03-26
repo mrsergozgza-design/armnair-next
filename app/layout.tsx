@@ -20,8 +20,8 @@ const notoArmenian = Noto_Sans_Armenian({
 })
 
 export const metadata: Metadata = {
-  title: 'ArmNair — Real Estate Yerevan',
-  description: 'ArmNair — Yerevan residential complex aggregator. Up-to-date data on the Armenian real estate market.',
+  title: 'ArmNair',
+  description: 'Real Estate Yerevan',
   icons: {
     icon: '/logo.png',
     apple: '/logo.png',
