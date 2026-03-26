@@ -1,11 +1,12 @@
 'use client'
 import { useEffect, useState } from 'react'
-
 import { useT } from '@/lib/StaticTranslationProvider'
+import { useLang } from '@/lib/LanguageContext'
 
 export default function Hero() {
   const [mounted, setMounted] = useState(false)
   const tr = useT()
+  const { lang } = useLang()
   useEffect(() => { const tm = setTimeout(() => setMounted(true), 50); return () => clearTimeout(tm) }, [])
 
   return (
@@ -25,7 +26,7 @@ export default function Hero() {
         pointerEvents:'none',
       }} />
 
-      <div style={{ position:'relative', zIndex:1, padding:'0 2rem' }}>
+      <div key={lang} className="animate-fade" style={{ position:'relative', zIndex:1, padding:'0 2rem' }}>
         {/* Pulse dot + label */}
         <div style={{
           display:'flex', alignItems:'center', gap:8, marginBottom:'1rem',

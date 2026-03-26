@@ -45,7 +45,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
       borderBottom:'1px solid var(--border-c)',
       transition:'background 0.25s, border-color 0.25s',
     }}>
-      <div style={{ display:'flex', alignItems:'center', gap: isMobile ? 5 : 8, flexWrap:'wrap', padding: isMobile ? '0.5rem 0.75rem' : '0.6rem 2rem' }}>
+      <div key={lang} className="animate-fade" style={{ display:'flex', alignItems:'center', gap: isMobile ? 5 : 8, flexWrap:'wrap', padding: isMobile ? '0.5rem 0.75rem' : '0.6rem 2rem' }}>
         {/* City pill */}
         <div style={{
           display:'flex', alignItems:'center', gap:5,

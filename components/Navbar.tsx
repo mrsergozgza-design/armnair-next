@@ -79,7 +79,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
       </button>
 
       {/* Center nav — hidden on mobile (tab bar handles navigation) */}
-      <div className="nav-center" style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
+      <div key={lang} className="nav-center animate-fade" style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
         {navLinks.map(link => {
           const active = activePage === link.page
           return (
