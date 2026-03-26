@@ -237,6 +237,7 @@ const T: Dict = {
   'toast.addedToFavorites':      { en: 'Added to favorites',    ru: 'Добавлено в избранное',   am: 'Ավելացված է նախընտրածներին' },
   'toast.removedFromFavorites':  { en: 'Removed from favorites',ru: 'Удалено из избранного',   am: 'Հեռացված է նախընտրածներից' },
   'toast.addedToCompare':        { en: 'Added to compare',      ru: 'Добавлено к сравнению',   am: 'Ավելացված է համեմատությանը' },
+  'toast.removedFromCompare':    { en: 'Removed from compare',  ru: 'Удалено из сравнения',     am: 'Հեռացված է համեմատությունից' },
   'toast.favoritesCleared':      { en: 'Favorites cleared',     ru: 'Избранное очищено',        am: 'Նախընտրածները մաքրված են' },
   'favorites.clearAll':          { en: 'Clear all',             ru: 'Очистить всё',             am: 'Մաքրել բոլորը' },
 

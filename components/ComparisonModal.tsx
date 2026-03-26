@@ -4,6 +4,7 @@ import { X, Trash2 } from 'lucide-react'
 import { Complex } from '@/lib/types'
 import { fmtAmd, parseYield } from '@/lib/utils'
 import { useT, useTStatus, useTDistrict } from '@/lib/StaticTranslationProvider'
+import { useToast } from '@/lib/ToastContext'
 
 interface Props {
   complexes: Complex[]        // только те, что в compareIds
@@ -17,6 +18,7 @@ const MONTHLY_REFUND_CAP = 500_000
 
 export default function ComparisonModal({ complexes, onRemove, onClear, onClose, onOpenModal }: Props) {
   const tr = useT()
+  const { showToast } = useToast()
   const tStatus = useTStatus()
   const tDistrict = useTDistrict()
   const [mounted, setMounted] = useState(false)
@@ -226,7 +228,7 @@ export default function ComparisonModal({ complexes, onRemove, onClear, onClose,
             }}>
               {/* Remove button */}
               <button
-                onClick={() => onRemove(c.id)}
+                onClick={() => { onRemove(c.id); showToast(tr('toast.removedFromCompare')) }}
                 style={{
                   position: 'absolute', top: 8, right: 8,
                   background: 'none', border: 'none', cursor: 'pointer',
