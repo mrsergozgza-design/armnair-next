@@ -4,6 +4,7 @@ export interface Unit {
   project_id: string;
   type: string;
   area_m2: number;
+  floor?: string;
   price_usd: number;
   status: string;
 }

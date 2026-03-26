@@ -206,10 +206,11 @@ export async function fetchUnits(): Promise<Unit[]> {
         const project_id = row['project_id']?.trim()
         const type = row['type']?.trim()
         const area_m2 = parseNum(row['area_m2'])
+        const floor = row['floor']?.trim() || undefined
         const price_usd = parseNum(row['price_usd'])
         const status = row['status']?.trim()
         if (!project_id || !type) return null
-        return { project_id, type, area_m2, price_usd, status } as Unit
+        return { project_id, type, area_m2, floor, price_usd, status } as Unit
       })
       .filter((u): u is Unit => u !== null)
   } catch (err) {

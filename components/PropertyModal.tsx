@@ -54,6 +54,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
     'ru'
   )
   const [units, setUnits] = useState<Unit[]>([])
+  const [unitsExpanded, setUnitsExpanded] = useState(false)
 
   const fetchUnitsForProperty = useCallback(async (name: string) => {
     try {
@@ -87,6 +88,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
       setMounted(true)
       setDeveloperExpanded(false)
       setUnits([])
+      setUnitsExpanded(false)
       document.body.classList.add('modal-open')
       fetchUnitsForProperty(c.name)
     } else {
@@ -578,46 +580,48 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
               )}
 
               {/* ── Available Units block ── */}
-              {units.length > 0 && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>
-                    {tr('units.title')}
-                  </h4>
-                  <div style={{ border: '1px solid rgba(139,105,20,0.12)', borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', background: 'rgba(160,120,32,0.08)', borderBottom: '1px solid rgba(139,105,20,0.12)' }}>
-                      {[tr('units.type'), tr('units.area'), tr('units.price'), tr('units.status')].map((h, i) => (
-                        <div key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0.45rem 0.6rem' }}>
-                          {h}
-                        </div>
-                      ))}
-                    </div>
-                    {units.map((u, i) => {
-                      const statusRu = u.status?.trim()
-                      const statusColor =
-                        statusRu === 'Свободен' ? '#2A9D8F' :
-                        statusRu === 'Забронирован' ? '#E9C46A' :
-                        'var(--tm)'
-                      const statusLabel =
-                        statusRu === 'Свободен' ? tr('units.free') :
-                        statusRu === 'Забронирован' ? tr('units.booked') :
-                        statusRu === 'Продан' ? tr('units.sold') :
-                        u.status
-                      return (
+              {units.length > 0 && (() => {
+                const LIMIT = 5
+                const visibleUnits = unitsExpanded ? units : units.slice(0, LIMIT)
+                const hasMore = units.length > LIMIT
+                return (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>
+                      {tr('units.title')}
+                    </h4>
+                    <div style={{ border: '1px solid rgba(139,105,20,0.12)', borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', background: 'rgba(160,120,32,0.08)', borderBottom: '1px solid rgba(139,105,20,0.12)' }}>
+                        {[tr('units.type'), tr('units.area'), tr('units.floor'), tr('units.price')].map((h, i) => (
+                          <div key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0.45rem 0.6rem' }}>
+                            {h}
+                          </div>
+                        ))}
+                      </div>
+                      {visibleUnits.map((u, i) => (
                         <div key={i} style={{
                           display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                          borderBottom: i < units.length - 1 ? '1px solid rgba(139,105,20,0.07)' : 'none',
+                          borderBottom: i < visibleUnits.length - 1 ? '1px solid rgba(139,105,20,0.07)' : 'none',
                           background: i % 2 === 0 ? 'transparent' : 'rgba(160,120,32,0.03)',
                         }}>
                           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.type}</div>
                           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.area_m2} м²</div>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.floor ?? '—'}</div>
                           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>${u.price_usd.toLocaleString()}</div>
-                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: statusColor, padding: '0.42rem 0.6rem' }}>{statusLabel}</div>
                         </div>
-                      )
-                    })}
+                      ))}
+                    </div>
+                    {hasMore && (
+                      <button
+                        onClick={() => setUnitsExpanded(v => !v)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#A07820', letterSpacing: '0.08em', marginTop: 7, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+                      >
+                        {unitsExpanded ? tr('modal.collapse') : `${tr('modal.readMore')} (${units.length - LIMIT})`}
+                        {unitsExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                      </button>
+                    )}
                   </div>
-                </div>
-              )}
+                )
+              })()}
 
               {/* Tax calculator */}
               <div style={{ background: 'rgba(160,120,32,0.05)', border: '1px solid rgba(160,120,32,0.12)', borderRadius: 4, padding: '1rem' }}>

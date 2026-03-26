@@ -214,6 +214,7 @@ const T: Dict = {
   'units.area':   { en: 'Area',             ru: 'Площадь',           am: 'Area' },
   'units.price':  { en: 'Price',            ru: 'Цена',              am: 'Price' },
   'units.status': { en: 'Status',           ru: 'Статус',            am: 'Status' },
+  'units.floor':  { en: 'Floor',            ru: 'Этаж',              am: 'Floor' },
   'units.free':   { en: 'Available',        ru: 'Свободен',          am: 'Available' },
   'units.booked': { en: 'Reserved',         ru: 'Забронирован',      am: 'Reserved' },
   'units.sold':   { en: 'Sold',             ru: 'Продан',            am: 'Sold' },
