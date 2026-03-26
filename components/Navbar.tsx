@@ -64,7 +64,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
         <Image
           src="/logo.png"
           alt="ArmNair"
-          width={36}
+          width={64}
           height={36}
           style={{ objectFit: 'contain', background: 'transparent', filter: theme === 'light' ? 'none' : 'brightness(1.1)' }}
         />
