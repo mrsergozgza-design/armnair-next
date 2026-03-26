@@ -6,6 +6,7 @@ import { useFavorites } from '@/lib/useFavorites'
 import { useCompare } from '@/lib/useCompare'
 import { useLang } from '@/lib/LanguageContext'
 import { useT } from '@/lib/StaticTranslationProvider'
+import { useToast } from '@/lib/ToastContext'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
 import FilterBar from '@/components/FilterBar'
@@ -28,6 +29,7 @@ const DEFAULT_FILTERS: Filters = { district:'', developer:'', price:9_999_999, t
 export default function Home() {
   const { lang } = useLang()
   const tr = useT()
+  const { showToast } = useToast()
   const [data, setData]         = useState<Complex[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters]   = useState<Filters>(DEFAULT_FILTERS)
@@ -222,9 +224,18 @@ export default function Home() {
         onClose={() => setSelectedId(null)}
         onOpenContact={() => setConsultOpen(true)}
         isFavorite={selectedId ? favorites.has(selectedId) : false}
-        onToggleFavorite={() => selectedId && toggleFav(selectedId)}
+        onToggleFavorite={() => {
+          if (!selectedId) return
+          const wasFav = favorites.has(selectedId)
+          toggleFav(selectedId)
+          showToast(tr(wasFav ? 'toast.removedFromFavorites' : 'toast.addedToFavorites'))
+        }}
         inCompare={selectedId ? compareIds.includes(selectedId) : false}
-        onToggleCompare={() => selectedId && toggleCompare(selectedId)}
+        onToggleCompare={() => {
+          if (!selectedId) return
+          toggleCompare(selectedId)
+          if (!compareIds.includes(selectedId)) showToast(tr('toast.addedToCompare'))
+        }}
         onOpenMap={(id: string) => {
           setSelectedId(null)
           setMapFocusId(id)

@@ -232,6 +232,12 @@ const T: Dict = {
   'consult.footer':   { en: "We'll respond within 15 min · Mon–Sun 9:00–21:00", ru: 'Ответим в течение 15 минут · Пн–Вс 9:00–21:00', am: "We'll respond within 15 min · Mon–Sun 9:00–21:00" },
   'contact.phone':    { en: 'Phone',                                       ru: 'Телефон',                                       am: 'Հեռախոս' },
 
+  // ── Toast notifications ───────────────────────────────────────────────
+  'toast.linkCopied':            { en: 'Link copied',           ru: 'Ссылка скопирована',      am: 'Հղումը պատճենված է' },
+  'toast.addedToFavorites':      { en: 'Added to favorites',    ru: 'Добавлено в избранное',   am: 'Ավելացված է նախընտրածներին' },
+  'toast.removedFromFavorites':  { en: 'Removed from favorites',ru: 'Удалено из избранного',   am: 'Հեռացված է նախընտրածներից' },
+  'toast.addedToCompare':        { en: 'Added to compare',      ru: 'Добавлено к сравнению',   am: 'Ավելացված է համեմատությանը' },
+
   // ── page.tsx ──────────────────────────────────────────────────────────
   'page.footer':     { en: '© 2026 ArmNair · Yerevan · Armenia', ru: '© 2026 ArmNair · Ереван · Армения', am: '© 2026 ArmNair · Yerevan · Armenia' },
   'page.collection': { en: 'YOUR PERSONAL SELECTION FROM ARMNAIR', ru: 'ВАША ПЕРСОНАЛЬНАЯ ПОДБОРКА ОТ ARMNAIR', am: 'YOUR PERSONAL SELECTION FROM ARMNAIR' },

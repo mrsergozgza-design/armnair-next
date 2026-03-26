@@ -8,6 +8,7 @@ import { useTheme } from './ThemeProvider'
 import { useIsMobile } from '@/lib/useIsMobile'
 import { useLang } from '@/lib/LanguageContext'
 import { useT, useTStatus } from '@/lib/StaticTranslationProvider'
+import { useToast } from '@/lib/ToastContext'
 import { useAutoTranslateBatch } from '@/lib/useAutoTranslate'
 import {
   Chart as ChartJS,
@@ -36,6 +37,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   const { lang } = useLang()
   const tr = useT()
   const tStatus = useTStatus()
+  const { showToast } = useToast()
 
   const cacheId = `modal-${c?.id ?? '__none__'}-${lang}`
 
@@ -74,7 +76,6 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   const [salary, setSalary] = useState(600000)
   const [mounted, setMounted] = useState(false)
   const [heartAnim, setHeartAnim] = useState(false)
-  const [toast, setToast] = useState(false)
   const [heroIdx, setHeroIdx] = useState(0)
   const [developerExpanded, setDeveloperExpanded] = useState(false)
 
@@ -314,10 +315,9 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
           {/* Share */}
           <button
             onClick={() => {
-              navigator.clipboard.writeText(window.location.href).then(() => {
-                setToast(true)
-                setTimeout(() => setToast(false), 2000)
-              })
+              const slug = c.name.toLowerCase().replace(/\s+/g, '-')
+              const url = `${window.location.origin}/property/${slug}`
+              navigator.clipboard.writeText(url).then(() => showToast(tr('toast.linkCopied')))
             }}
             title="Скопировать ссылку"
             style={{
@@ -865,20 +865,6 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
             </div>
           </div>
         </div>{/* end scrollable */}
-
-        {/* Toast: link copied */}
-        {toast && (
-          <div style={{
-            position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(30,30,30,0.92)', border: '1px solid rgba(201,169,110,0.3)',
-            borderRadius: 4, padding: '0.5rem 1.1rem',
-            fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.08em',
-            color: '#C9A96E', whiteSpace: 'nowrap', zIndex: 20,
-            pointerEvents: 'none',
-          }}>
-            Ссылка скопирована
-          </div>
-        )}
 
         {/* Sticky CTA footer (mobile only) */}
         {isMobile && (
