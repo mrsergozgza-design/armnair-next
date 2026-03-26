@@ -23,5 +23,10 @@ export function useFavorites() {
     })
   }, [])
 
-  return { favorites, toggle, count: favorites.size }
+  const clear = useCallback(() => {
+    setFavorites(new Set())
+    try { localStorage.removeItem(STORAGE_KEY) } catch {}
+  }, [])
+
+  return { favorites, toggle, clear, count: favorites.size }
 }

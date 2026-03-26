@@ -44,7 +44,7 @@ export default function Home() {
   const [compareOpen, setCompareOpen] = useState(false)
   const [collectionMode, setCollectionMode] = useState(false)
   const [collectionIds, setCollectionIds]   = useState<string[]>([])
-  const { favorites, toggle: toggleFav, count: favCount } = useFavorites()
+  const { favorites, toggle: toggleFav, clear: clearFav, count: favCount } = useFavorites()
   const { compareIds, toggle: toggleCompare, remove: removeCompare, clear: clearCompare, count: compareCount } = useCompare()
 
   useEffect(() => {
@@ -196,7 +196,7 @@ export default function Home() {
       {page === 'analytics'
         ? <AnalyticsPage data={data} onOpenModal={setSelectedId} onBack={() => setPage('home')} />
         : page === 'catalog'
-        ? <CatalogPage data={data} isLoading={isLoading} onOpenModal={setSelectedId} onBack={() => setPage('home')} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} />
+        ? <CatalogPage data={data} isLoading={isLoading} onOpenModal={setSelectedId} onBack={() => setPage('home')} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} />
         : <>
             <Hero />
             <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />

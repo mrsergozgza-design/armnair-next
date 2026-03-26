@@ -7,6 +7,7 @@ import PropertyCard from './PropertyCard'
 import PropertyCardSkeleton from './PropertyCardSkeleton'
 import { ArrowUpDown } from 'lucide-react'
 import { useT } from '@/lib/StaticTranslationProvider'
+import { useToast } from '@/lib/ToastContext'
 
 interface Filters {
   district: string; developer: string; price: number
@@ -29,10 +30,12 @@ interface Props {
   compareIds?: string[]
   onToggleCompare?: (id: string) => void
   onShareFavorites?: () => void
+  onClearFavorites?: () => void
 }
 
-export default function CatalogPage({ data, isLoading = false, onOpenModal, onBack, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites }: Props) {
+export default function CatalogPage({ data, isLoading = false, onOpenModal, onBack, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites, onClearFavorites }: Props) {
   const tr = useT()
+  const { showToast } = useToast()
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [sort, setSort] = useState<SortKey>('default')
 
@@ -85,8 +88,29 @@ export default function CatalogPage({ data, isLoading = false, onOpenModal, onBa
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--gold)' }}>{tr('catalog.title')}</span>
         </div>
 
-        {/* Sort */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Right side: clear all + sort */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {favOnly && favorites && favorites.size > 0 && (
+            <button
+              onClick={() => {
+                if (!window.confirm(tr('favorites.clearAll') + '?')) return
+                onClearFavorites?.()
+                showToast(tr('toast.favoritesCleared'))
+              }}
+              style={{
+                background: 'none',
+                border: '1px solid rgba(231,111,81,0.4)',
+                borderRadius: 100, cursor: 'pointer',
+                fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.08em',
+                color: 'var(--rose)', padding: '4px 12px',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(231,111,81,0.1)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
+            >
+              {tr('favorites.clearAll')}
+            </button>
+          )}
           <ArrowUpDown size={12} color="var(--t3)" />
           <select
             className="pill-sel"
