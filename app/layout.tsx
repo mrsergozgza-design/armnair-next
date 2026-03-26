@@ -4,6 +4,7 @@ import ThemeProvider from '@/components/ThemeProvider'
 import LanguageProvider from '@/lib/LanguageContext'
 import StaticTranslationProvider from '@/lib/StaticTranslationProvider'
 import ToastProvider from '@/lib/ToastContext'
+import PageTransition from '@/components/PageTransition'
 import './globals.css'
 
 const cormorant = Cormorant_Garamond({
@@ -46,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <StaticTranslationProvider>
             <ThemeProvider>
               <ToastProvider>
-                {children}
+                <PageTransition>{children}</PageTransition>
               </ToastProvider>
             </ThemeProvider>
           </StaticTranslationProvider>
