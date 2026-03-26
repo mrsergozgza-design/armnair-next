@@ -7,6 +7,7 @@ import { ArrowRight, Heart, GitCompare, ChevronLeft, ChevronRight, Home } from '
 import { useLang } from '@/lib/LanguageContext'
 import { useT, useTStatus, useTDistrict } from '@/lib/StaticTranslationProvider'
 import { useAutoTranslate } from '@/lib/useAutoTranslate'
+import { useToast } from '@/lib/ToastContext'
 
 // Тёмный 1×1 placeholder пока грузится реальное фото
 const BLUR_PLACEHOLDER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII='
@@ -24,6 +25,7 @@ interface Props {
 function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onToggleFavorite, inCompare = false, onToggleCompare }: Props) {
   const { lang } = useLang()
   const tr = useT()
+  const { showToast } = useToast()
   const tStatus = useTStatus()
   const tDistrict = useTDistrict()
   const ss = statusStyle(c.status)
@@ -45,7 +47,8 @@ function PropertyCard({ complex: c, onClick, onHover, isFavorite = false, onTogg
     e.preventDefault()
     setHeartAnim(true)
     onToggleFavorite?.()
-  }, [onToggleFavorite])
+    showToast(tr(isFavorite ? 'toast.removedFromFavorites' : 'toast.addedToFavorites'))
+  }, [onToggleFavorite, isFavorite, showToast, tr])
 
   const favBorder = isFavorite
     ? '1px solid rgba(201,169,110,0.55)'
