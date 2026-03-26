@@ -11,11 +11,11 @@ import { useT, useTStatus } from '@/lib/StaticTranslationProvider'
 import { useAutoTranslateBatch } from '@/lib/useAutoTranslate'
 import {
   Chart as ChartJS,
-  CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip
+  CategoryScale, LinearScale, PointElement, LineElement, BarElement, Filler, Tooltip
 } from 'chart.js'
-import { Line } from 'react-chartjs-2'
+import { Line, Bar } from 'react-chartjs-2'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Filler, Tooltip)
 
 const MiniMap = dynamic(() => import('./MiniMap'), { ssr: false })
 
@@ -55,6 +55,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   )
   const [units, setUnits] = useState<Unit[]>([])
   const [unitsLimit, setUnitsLimit] = useState(5)
+  const [unitsTypeFilter, setUnitsTypeFilter] = useState('all')
 
   const fetchUnitsForProperty = useCallback(async (name: string) => {
     try {
@@ -89,6 +90,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
       setDeveloperExpanded(false)
       setUnits([])
       setUnitsLimit(5)
+      setUnitsTypeFilter('all')
       document.body.classList.add('modal-open')
       fetchUnitsForProperty(c.name)
     } else {
@@ -656,45 +658,130 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
 
               {/* ── Available Units block ── */}
               {units.length > 0 && (() => {
-                const visibleUnits = units.slice(0, unitsLimit)
-                const hasMore = unitsLimit < units.length
+                const unitTypes = Array.from(new Set(units.map(u => u.type)))
+                const filteredUnits = unitsTypeFilter === 'all' ? units : units.filter(u => u.type === unitsTypeFilter)
+                const visibleUnits = filteredUnits.slice(0, unitsLimit)
+                const hasMore = unitsLimit < filteredUnits.length
+
+                const minPrice = Math.min(...units.map(u => u.price_usd))
+                const maxPrice = Math.max(...units.map(u => u.price_usd))
+                const minArea = Math.min(...units.map(u => u.area_m2))
+                const maxArea = Math.max(...units.map(u => u.area_m2))
+
+                const barData = {
+                  labels: unitTypes,
+                  datasets: [{
+                    data: unitTypes.map(t => units.filter(u => u.type === t).length),
+                    backgroundColor: '#b8942a',
+                    borderRadius: 2,
+                    barThickness: 12,
+                  }],
+                }
+                const barOptions = {
+                  indexAxis: 'y' as const,
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(30,30,30,0.9)', bodyColor: '#fff', displayColors: false } },
+                  scales: {
+                    x: { display: false, grid: { display: false } },
+                    y: { grid: { display: false }, ticks: { color: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#374151', font: { family: 'DM Mono', size: 11 } } },
+                  },
+                }
+
                 return (
                   <div style={{ marginTop: '1.5rem' }}>
                     <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>
                       {tr('units.title')}
                     </h4>
-                    <div style={{ border: '1px solid rgba(139,105,20,0.12)', borderRadius: 4, overflow: 'hidden' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', background: 'rgba(160,120,32,0.08)', borderBottom: '1px solid rgba(139,105,20,0.12)' }}>
-                        {[tr('units.type'), tr('units.area'), tr('units.floor'), tr('units.price')].map((h, i) => (
-                          <div key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0.45rem 0.6rem' }}>
-                            {h}
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '3fr 2fr', gap: '1rem', alignItems: 'start' }}>
+
+                      {/* Left: table */}
+                      <div>
+                        <div style={{ border: '1px solid rgba(139,105,20,0.12)', borderRadius: 4, overflow: 'hidden' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', background: 'rgba(160,120,32,0.08)', borderBottom: '1px solid rgba(139,105,20,0.12)' }}>
+                            {[tr('units.type'), tr('units.area'), tr('units.floor'), tr('units.price')].map((h, i) => (
+                              <div key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0.45rem 0.6rem' }}>
+                                {h}
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+                            {visibleUnits.map((u, i) => (
+                              <div key={i} style={{
+                                display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                borderBottom: i < visibleUnits.length - 1 ? '1px solid rgba(139,105,20,0.07)' : 'none',
+                                background: i % 2 === 0 ? 'transparent' : 'rgba(160,120,32,0.03)',
+                              }}>
+                                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.type}</div>
+                                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.area_m2} м²</div>
+                                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.floor ?? '—'}</div>
+                                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>${u.price_usd.toLocaleString()}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {hasMore && (
+                          <button
+                            onClick={() => setUnitsLimit(v => v + 10)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#A07820', letterSpacing: '0.08em', marginTop: 7, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+                          >
+                            {tr('modal.readMore')} ({Math.min(10, filteredUnits.length - unitsLimit)})
+                            <ChevronDown size={10} />
+                          </button>
+                        )}
                       </div>
-                      <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-                        {visibleUnits.map((u, i) => (
-                          <div key={i} style={{
-                            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                            borderBottom: i < visibleUnits.length - 1 ? '1px solid rgba(139,105,20,0.07)' : 'none',
-                            background: i % 2 === 0 ? 'transparent' : 'rgba(160,120,32,0.03)',
-                          }}>
-                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.type}</div>
-                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.area_m2} м²</div>
-                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.floor ?? '—'}</div>
-                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>${u.price_usd.toLocaleString()}</div>
+
+                      {/* Right: summary + filter + chart */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+
+                        {/* Summary */}
+                        <div style={{ background: 'var(--card)', border: '1px solid rgba(139,105,20,0.12)', borderRadius: 4, padding: '0.7rem 0.85rem' }}>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#A07820', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 8 }}>
+                            {tr('units.summary')}
                           </div>
-                        ))}
+                          {[
+                            { label: tr('units.total'),      value: String(units.length) },
+                            { label: tr('units.priceRange'), value: `$${(minPrice / 1000).toFixed(0)}K — $${(maxPrice / 1000).toFixed(0)}K` },
+                            { label: tr('units.areaRange'),  value: `${minArea} — ${maxArea} м²` },
+                          ].map((row, i) => (
+                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '0.28rem 0', borderBottom: i < 2 ? '1px solid rgba(139,105,20,0.07)' : 'none', gap: 8 }}>
+                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: 'var(--tm)' }}>{row.label}</span>
+                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--t2)', textAlign: 'right' }}>{row.value}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Type filter */}
+                        <div>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
+                            {tr('units.distribution')}
+                          </div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                            {['all', ...unitTypes].map(t => {
+                              const active = unitsTypeFilter === t
+                              return (
+                                <button key={t} onClick={() => { setUnitsTypeFilter(t); setUnitsLimit(5) }} style={{
+                                  fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.06em',
+                                  padding: '3px 10px', borderRadius: 20, cursor: 'pointer',
+                                  border: active ? '1px solid rgba(201,169,110,0.6)' : '1px solid rgba(139,105,20,0.25)',
+                                  background: active ? 'rgba(160,120,32,0.2)' : 'transparent',
+                                  color: active ? '#C9A96E' : 'var(--tm)',
+                                  transition: 'all 0.15s',
+                                }}>
+                                  {t === 'all' ? tr('units.filterAll') : t}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Bar chart */}
+                        <div style={{ height: Math.max(80, unitTypes.length * 28) }}>
+                          <Bar data={barData} options={barOptions as never} />
+                        </div>
+
                       </div>
                     </div>
-                    {hasMore && (
-                      <button
-                        onClick={() => setUnitsLimit(v => v + 10)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#A07820', letterSpacing: '0.08em', marginTop: 7, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
-                      >
-                        {tr('modal.readMore')} ({Math.min(10, units.length - unitsLimit)})
-                        <ChevronDown size={10} />
-                      </button>
-                    )}
                   </div>
                 )
               })()}

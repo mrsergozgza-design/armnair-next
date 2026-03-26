@@ -209,7 +209,13 @@ const T: Dict = {
   'district.Nubarashen':       { en: 'Nubarashen',         ru: 'Нубарашен',        am: 'Nubarashen' },
 
   // ── Units table ───────────────────────────────────────────────────────
-  'units.title':  { en: 'Available Units',  ru: 'Доступные юниты',   am: 'Available Units' },
+  'units.title':        { en: 'Available Units',  ru: 'Доступные юниты',   am: 'Available Units' },
+  'units.summary':      { en: 'Summary',          ru: 'Сводка',            am: 'Summary' },
+  'units.total':        { en: 'Total units',       ru: 'Всего юнитов',      am: 'Total units' },
+  'units.priceRange':   { en: 'Price range',       ru: 'Диапазон цен',      am: 'Price range' },
+  'units.areaRange':    { en: 'Area',              ru: 'Площади',           am: 'Area' },
+  'units.filterAll':    { en: 'All',               ru: 'Все',               am: 'Բոլորը' },
+  'units.distribution': { en: 'By type',           ru: 'По типам',          am: 'By type' },
   'units.type':   { en: 'Type',             ru: 'Тип',               am: 'Type' },
   'units.area':   { en: 'Area',             ru: 'Площадь',           am: 'Area' },
   'units.price':  { en: 'Price',            ru: 'Цена',              am: 'Price' },
