@@ -208,6 +208,16 @@ const T: Dict = {
   'district.Ajapnyak':         { en: 'Ajapnyak',           ru: 'Аджапняк',         am: 'Ajapnyak' },
   'district.Nubarashen':       { en: 'Nubarashen',         ru: 'Нубарашен',        am: 'Nubarashen' },
 
+  // ── Units table ───────────────────────────────────────────────────────
+  'units.title':  { en: 'Available Units',  ru: 'Доступные юниты',   am: 'Available Units' },
+  'units.type':   { en: 'Type',             ru: 'Тип',               am: 'Type' },
+  'units.area':   { en: 'Area',             ru: 'Площадь',           am: 'Area' },
+  'units.price':  { en: 'Price',            ru: 'Цена',              am: 'Price' },
+  'units.status': { en: 'Status',           ru: 'Статус',            am: 'Status' },
+  'units.free':   { en: 'Available',        ru: 'Свободен',          am: 'Available' },
+  'units.booked': { en: 'Reserved',         ru: 'Забронирован',      am: 'Reserved' },
+  'units.sold':   { en: 'Sold',             ru: 'Продан',            am: 'Sold' },
+
   // ── ConsultModal ──────────────────────────────────────────────────────
   'consult.title':    { en: 'Contact us',                                  ru: 'Связаться с нами',                              am: 'Contact us' },
   'consult.subtitle': { en: 'ArmNair · Yerevan · Armenia',                 ru: 'ArmNair · Ереван · Армения',                    am: 'ArmNair · Yerevan · Armenia' },

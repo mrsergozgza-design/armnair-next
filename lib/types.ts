@@ -1,5 +1,13 @@
 export interface PricePoint { month: string; price: number; }
 
+export interface Unit {
+  project_id: string;
+  type: string;
+  area_m2: number;
+  price_usd: number;
+  status: string;
+}
+
 export interface Complex {
   // Core fields (always present)
   id: string; name: string; developer: string; district: string;

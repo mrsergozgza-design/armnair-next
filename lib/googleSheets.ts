@@ -1,5 +1,5 @@
 import Papa from 'papaparse'
-import type { Complex, PricePoint } from './types'
+import type { Complex, PricePoint, Unit } from './types'
 
 const SPREADSHEET_ID = '1aJrXXy9P29U93reIW_V_nlPzu3axy5IGnXOmO5ETTNE'
 // Первый лист — доступен без gid
@@ -7,6 +7,7 @@ const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export
 // /gviz/tq?tqx=out:csv поддерживает выбор листа по имени через &sheet=
 // (в отличие от /export?format=csv, который игнорирует параметр sheet)
 const PRICE_HISTORY_CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Price%20History`
+const UNITS_CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Units`
 
 /**
  * Колонки листа (первая строка):
@@ -183,6 +184,37 @@ async function fetchPriceHistory(): Promise<Record<string, PricePoint[]>> {
   } catch (err) {
     console.warn('[googleSheets] Price History exception:', err)
     return {}
+  }
+}
+
+export async function fetchUnits(): Promise<Unit[]> {
+  const url = process.env.GOOGLE_SHEET_UNITS_CSV_URL ?? UNITS_CSV_URL
+  try {
+    const res = await fetch(url, { next: { revalidate: 60 } })
+    if (!res.ok) {
+      console.warn('[googleSheets] Units fetch failed:', res.status)
+      return []
+    }
+    const csvText = await res.text()
+    const { data } = Papa.parse<Record<string, string>>(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: h => h.trim().toLowerCase().replace(/[\s,()]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''),
+    })
+    return data
+      .map(row => {
+        const project_id = row['project_id']?.trim()
+        const type = row['type']?.trim()
+        const area_m2 = parseNum(row['area_m2'])
+        const price_usd = parseNum(row['price_usd'])
+        const status = row['status']?.trim()
+        if (!project_id || !type) return null
+        return { project_id, type, area_m2, price_usd, status } as Unit
+      })
+      .filter((u): u is Unit => u !== null)
+  } catch (err) {
+    console.warn('[googleSheets] Units exception:', err)
+    return []
   }
 }
 

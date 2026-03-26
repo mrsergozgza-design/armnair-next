@@ -1,8 +1,8 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { X, Download, TrendingUp, Phone, MessageCircle, Heart, GitCompare, Link2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Train, Trees, GraduationCap, ShoppingBag, Building2, Dumbbell, MapPin, Utensils, Car } from 'lucide-react'
-import { Complex } from '@/lib/types'
+import { Complex, Unit } from '@/lib/types'
 import { fmtAmd, fmtDate, statusStyle, parseYield, priceGrowth } from '@/lib/utils'
 import { useTheme } from './ThemeProvider'
 import { useIsMobile } from '@/lib/useIsMobile'
@@ -53,6 +53,20 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
     cacheId,
     'ru'
   )
+  const [units, setUnits] = useState<Unit[]>([])
+
+  const fetchUnitsForProperty = useCallback(async (name: string) => {
+    try {
+      const res = await fetch('/api/units')
+      if (!res.ok) return
+      const data = await res.json()
+      const filtered = (data.units as Unit[]).filter(u => u.project_id === name)
+      setUnits(filtered)
+    } catch {
+      // silently ignore
+    }
+  }, [])
+
   const [area, setArea] = useState(60)
   const [interestRate, setInterestRate] = useState(11)
   const [loanPct, setLoanPct] = useState(0.80)
@@ -72,13 +86,15 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
     if (c) {
       setMounted(true)
       setDeveloperExpanded(false)
+      setUnits([])
       document.body.classList.add('modal-open')
+      fetchUnitsForProperty(c.name)
     } else {
       setMounted(false)
       document.body.classList.remove('modal-open')
     }
     return () => { document.body.classList.remove('modal-open') }
-  }, [c])
+  }, [c, fetchUnitsForProperty])
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -557,6 +573,48 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Available Units block ── */}
+              {units.length > 0 && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 10, textTransform: 'uppercase' }}>
+                    {tr('units.title')}
+                  </h4>
+                  <div style={{ border: '1px solid rgba(139,105,20,0.12)', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', background: 'rgba(160,120,32,0.08)', borderBottom: '1px solid rgba(139,105,20,0.12)' }}>
+                      {[tr('units.type'), tr('units.area'), tr('units.price'), tr('units.status')].map((h, i) => (
+                        <div key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0.45rem 0.6rem' }}>
+                          {h}
+                        </div>
+                      ))}
+                    </div>
+                    {units.map((u, i) => {
+                      const statusRu = u.status?.trim()
+                      const statusColor =
+                        statusRu === 'Свободен' ? '#2A9D8F' :
+                        statusRu === 'Забронирован' ? '#E9C46A' :
+                        'var(--tm)'
+                      const statusLabel =
+                        statusRu === 'Свободен' ? tr('units.free') :
+                        statusRu === 'Забронирован' ? tr('units.booked') :
+                        statusRu === 'Продан' ? tr('units.sold') :
+                        u.status
+                      return (
+                        <div key={i} style={{
+                          display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                          borderBottom: i < units.length - 1 ? '1px solid rgba(139,105,20,0.07)' : 'none',
+                          background: i % 2 === 0 ? 'transparent' : 'rgba(160,120,32,0.03)',
+                        }}>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.type}</div>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>{u.area_m2} м²</div>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--t2)', padding: '0.42rem 0.6rem' }}>${u.price_usd.toLocaleString()}</div>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: statusColor, padding: '0.42rem 0.6rem' }}>{statusLabel}</div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
