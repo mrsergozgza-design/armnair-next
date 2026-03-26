@@ -12,8 +12,8 @@
   --bg:         #FAF9F6;
   --surface:    #FFFFFF;
   --card:       #FFFFFF;
-  --t1:         #1A1A1A;
-  --t2:         #444444;
+  --t1:         #1a1a1a;
+  --t2:         #4a4a4a;
   --t3:         #777777;
   --tm:         #AAAAAA;
   --border-c:   rgba(180,150,80,0.15);
@@ -34,8 +34,8 @@ html.dark {
   --bg:         #09090F;
   --surface:    #111118;
   --card:       #16161F;
-  --t1:         #F0EDE8;
-  --t2:         #CCCCCC;
+  --t1:         #f0f0f0;
+  --t2:         #c0c0c0;
   --t3:         #9A9A9A;
   --tm:         #555560;
   --border-c:   rgba(139,105,20,0.18);
