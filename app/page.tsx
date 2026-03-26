@@ -201,7 +201,7 @@ export default function Home() {
             <Hero />
             <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />
             <StatsRow data={data} />
-            <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} />
+            <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} />
             <footer style={{
               borderTop:'1px solid var(--border-c)',
               background:'var(--bg)',
