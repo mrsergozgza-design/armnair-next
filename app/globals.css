@@ -188,6 +188,11 @@ body.modal-open { overflow: hidden; }
   .nav-right-extra { display: none !important; }
   .nav-logo-sub { font-size: 10px !important; white-space: nowrap !important; }
 
+  /* Compact language switcher on mobile so theme button always fits */
+  .lang-switcher { padding: 2px 4px 2px 6px !important; gap: 1px !important; }
+  .lang-switcher button { padding: 2px 5px !important; font-size: 0.58rem !important; letter-spacing: 0 !important; }
+  .theme-toggle { flex-shrink: 0 !important; }
+
   /* FilterBar: compact pills on mobile */
   .pill-sel {
     font-size: 0.62rem !important;

@@ -136,7 +136,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
         </button>
 
         {/* Language switcher */}
-        <div style={{
+        <div className="lang-switcher" style={{
           display: 'flex', alignItems: 'center', gap: 3,
           background: 'rgba(160,120,32,0.06)',
           backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
@@ -229,10 +229,11 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
         {/* Theme toggle */}
         <button
           onClick={toggle}
+          className="theme-toggle"
           style={{
             background: 'none', border: '1px solid var(--border-c)', borderRadius: 100,
             cursor: 'pointer', color: 'var(--t3)',
-            width: 32, height: 32,
+            width: 32, height: 32, flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'all 0.2s',
           }}
