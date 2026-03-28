@@ -238,10 +238,10 @@ export default function Home() {
             </footer>
           </>
         : <>
-            {/* Desktop: two-column layout — left scrolls, right map is sticky */}
-            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-              {/* Left column: all content, natural scroll */}
-              <div style={{ width: '45%', minWidth: 0 }}>
+            {/* Desktop: two-column layout — left scrolls internally, right map fixed */}
+            <div style={{ display: 'flex', height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
+              {/* Left column: internal scroll */}
+              <div style={{ width: '45%', minWidth: 0, height: '100%', overflowY: 'auto' }}>
                 <Hero />
                 {collectionMode && (
                   <div style={{
@@ -294,12 +294,10 @@ export default function Home() {
                   </span>
                 </footer>
               </div>
-              {/* Right column: sticky map */}
+              {/* Right column: map fills remaining width, full height */}
               <div id="right-panel" style={{
                 flex: 1,
-                position: 'sticky' as const,
-                top: 64,
-                height: 'calc(100vh - 64px)',
+                height: '100%',
                 overflow: 'hidden',
               }}>
                 <MapPanel
