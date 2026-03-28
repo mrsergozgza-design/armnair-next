@@ -16,6 +16,7 @@ interface FilterBarProps {
   onFiltersChange: (f: Filters) => void
   resultCount: number
   data: Complex[]
+  stickyTop?: number
 }
 
 interface DropdownOption { value: string | number; label: string; _active?: boolean }
@@ -104,7 +105,7 @@ function Dropdown({ placeholder, options, onChange, isMobile }: {
 
 type Option = DropdownOption
 
-export default function FilterBar({ filters, onFiltersChange, resultCount, data }: FilterBarProps) {
+export default function FilterBar({ filters, onFiltersChange, resultCount, data, stickyTop = 64 }: FilterBarProps) {
   const isMobile = useIsMobile()
   const { lang } = useLang()
   const tr = useT()
@@ -168,7 +169,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
 
   return (
     <div style={{
-      position: 'sticky' as const, top: 0, zIndex: 40,
+      position: 'sticky' as const, top: stickyTop, zIndex: 40,
       background:'var(--filter-bg)',
       backdropFilter:'blur(24px)', WebkitBackdropFilter:'blur(24px)',
       borderBottom:'1px solid var(--border-c)',

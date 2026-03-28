@@ -280,7 +280,7 @@ export default function Home() {
                     </button>
                   </div>
                 )}
-                <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />
+                <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} stickyTop={0} />
                 <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} topContent={<StatsRow data={data} />} noMap onHoveredChange={setHoveredId} />
                 <footer style={{
                   borderTop:'1px solid var(--border-c)',

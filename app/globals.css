@@ -269,8 +269,3 @@ select:focus {
   border-color: #b8942a;
 }
 
-/* ── Disable outer page scroll (left panel scrolls internally) ─────────── */
-html, body {
-  overflow: hidden;
-  height: 100%;
-}
