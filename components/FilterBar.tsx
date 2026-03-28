@@ -20,15 +20,16 @@ interface FilterBarProps {
 
 interface DropdownOption { value: string | number; label: string; _active?: boolean }
 
-function Dropdown({ options, onChange, isMobile }: {
+function Dropdown({ placeholder, options, onChange, isMobile }: {
+  placeholder: string
   options: DropdownOption[]
   onChange: (v: string | number) => void
   isMobile: boolean
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const current = options.find(o => o._active) ?? options[0]
-  const isActive = !!options.find(o => o._active)
+  const selected = options.find(o => o._active)
+  const isActive = !!selected
 
   useEffect(() => {
     if (!open) return
@@ -58,7 +59,7 @@ function Dropdown({ options, onChange, isMobile }: {
           transition: 'border-color 0.2s, background 0.2s',
         }}
       >
-        <span>{current.label}</span>
+        <span>{isActive ? selected!.label : placeholder}</span>
         <svg
           width="9" height="6" viewBox="0 0 10 6"
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s', flexShrink: 0 }}
@@ -212,11 +213,11 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
           )}
         </div>
 
-        <Dropdown options={districtOpts}  onChange={v => set('district', v)}  isMobile={isMobile} />
-        <Dropdown options={developerOpts} onChange={v => set('developer', v)} isMobile={isMobile} />
-        <Dropdown options={priceOpts}     onChange={v => set('price', v)}     isMobile={isMobile} />
-        <Dropdown options={statusOpts}    onChange={v => set('status', v)}    isMobile={isMobile} />
-        <Dropdown options={taxOpts}       onChange={v => set('tax', v)}       isMobile={isMobile} />
+        <Dropdown placeholder={tr('filter.district')}  options={districtOpts}  onChange={v => set('district', v)}  isMobile={isMobile} />
+        <Dropdown placeholder={tr('filter.developer')} options={developerOpts} onChange={v => set('developer', v)} isMobile={isMobile} />
+        <Dropdown placeholder={tr('filter.price')}     options={priceOpts}     onChange={v => set('price', v)}     isMobile={isMobile} />
+        <Dropdown placeholder={tr('filter.status')}    options={statusOpts}    onChange={v => set('status', v)}    isMobile={isMobile} />
+        <Dropdown placeholder={tr('filter.taxRefund')} options={taxOpts}       onChange={v => set('tax', v)}       isMobile={isMobile} />
 
         <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:10 }}>
           <span style={{ fontFamily:'var(--font-mono)', fontSize:'0.7rem', color:'var(--gold)', letterSpacing:'0.06em' }}>
