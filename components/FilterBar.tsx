@@ -151,7 +151,10 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
 
   const statusOpts: Option[] = [
     { value: '', label: tr('filter.status'), _active: false },
-    ...statuses.map(s => ({ value: s, label: tStatus(s), _active: filters.status === s })),
+    ...statuses
+      .map(s => ({ value: s, label: tStatus(s), _active: filters.status === s }))
+      .filter(o => !o.label.startsWith('status.'))                                // drop untranslated raw keys
+      .filter((o, i, arr) => arr.findIndex(x => x.label === o.label) === i),      // drop duplicate labels
   ]
 
   const taxOpts: Option[] = [
