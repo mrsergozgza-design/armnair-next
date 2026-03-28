@@ -1,13 +1,17 @@
 'use client'
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { useEffect, useRef } from 'react'
 import React from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import L from 'leaflet'
+import 'leaflet.markercluster'
 import { Complex } from '@/lib/types'
 import { statusStyle } from '@/lib/utils'
 import { ArrowRight } from 'lucide-react'
 import { useT, useTStatus } from '@/lib/StaticTranslationProvider'
+import { useLang } from '@/lib/LanguageContext'
 
 // Fix default icon paths
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
@@ -51,24 +55,106 @@ function FitBounds({ complexes }: { complexes: Complex[] }) {
   return null
 }
 
-function MapController({ complexes, focusId, markerRefs, onDone }: {
+function ClusterLayer({ complexes, onMarkerClick, hoveredId, markerRefs, clusterGroupRef, detailsLabel, focusId, onFocusDone }: {
   complexes: Complex[]
-  focusId: string | null | undefined
+  onMarkerClick: (id: string) => void
+  hoveredId?: string | null
   markerRefs: React.MutableRefObject<Map<string, L.Marker>>
-  onDone?: () => void
+  clusterGroupRef: React.MutableRefObject<any>
+  detailsLabel: string
+  focusId?: string | null
+  onFocusDone?: () => void
 }) {
   const map = useMap()
+
+  // Rebuild cluster when complexes change
+  useEffect(() => {
+    const clusterGroup = (L as any).markerClusterGroup({
+      maxClusterRadius: 60,
+      iconCreateFunction: (cluster: any) => L.divIcon({
+        html: `<div style="background:#A07820;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.35)">${cluster.getChildCount()}</div>`,
+        className: '',
+        iconSize: [36, 36],
+      }),
+    })
+
+    clusterGroupRef.current = clusterGroup
+    markerRefs.current.clear()
+
+    complexes.forEach(c => {
+      if (!c.lat || !c.lng) return
+
+      const marker = L.marker([c.lat, c.lng], { icon: GOLD_ICON })
+
+      marker.bindPopup(() => {
+        const div = document.createElement('div')
+        div.style.cssText = 'width:220px;overflow:hidden'
+        const ss = statusStyle(c.status)
+        div.innerHTML = `
+          ${c.image ? `
+            <div style="height:105px;overflow:hidden;position:relative">
+              <img src="${c.image}" alt="${c.name}" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.65)"/>
+              <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 55%)"></div>
+            </div>` : ''}
+          <div style="padding:0.6rem">
+            <div style="font-family:monospace;font-size:0.56rem;color:#888;margin-bottom:3px">${c.developer ?? ''}</div>
+            <div style="font-size:1.05rem;font-weight:400;margin-bottom:4px">${c.name}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+              <span style="font-family:monospace;font-size:0.78rem;color:#b8942a">$${c.price_usd.toLocaleString()}</span>
+              <span style="font-family:monospace;font-size:0.52rem;background:${ss.bg};border:1px solid ${ss.border};color:${ss.color};padding:1px 5px;border-radius:2px">${c.status}</span>
+            </div>
+            <button class="cluster-popup-btn" style="width:100%;background:rgba(160,120,32,0.1);border:1px solid rgba(160,120,32,0.28);color:#b8942a;cursor:pointer;font-family:monospace;font-size:0.62rem;letter-spacing:0.06em;padding:0.35rem;display:flex;align-items:center;justify-content:center;gap:4px">
+              ${detailsLabel} →
+            </button>
+          </div>
+        `
+        div.querySelector('.cluster-popup-btn')?.addEventListener('click', () => onMarkerClick(c.id))
+        return div
+      }, { maxWidth: 240 })
+
+      marker.on('mouseover', e => (e.target as L.Marker).openPopup())
+      marker.on('mouseout', e => (e.target as L.Marker).closePopup())
+      marker.on('click', () => onMarkerClick(c.id))
+
+      clusterGroup.addLayer(marker)
+      markerRefs.current.set(c.id, marker)
+    })
+
+    map.addLayer(clusterGroup)
+
+    return () => {
+      map.removeLayer(clusterGroup)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [complexes.map(c => c.id).join(',')])
+
+  // Update hovered marker icon
+  useEffect(() => {
+    markerRefs.current.forEach((marker, id) => {
+      marker.setIcon(id === hoveredId ? GOLD_ICON_ACTIVE : GOLD_ICON)
+      if (id === hoveredId) marker.setZIndexOffset(1000)
+      else marker.setZIndexOffset(0)
+    })
+  }, [hoveredId, markerRefs])
+
+  // Handle focus: zoom to show the marker, then open its popup
   useEffect(() => {
     if (!focusId) return
-    const c = complexes.find(cx => cx.id === focusId)
-    if (!c || !c.lat || !c.lng) return
-    map.flyTo([c.lat, c.lng], 15, { animate: true, duration: 1.2 })
-    setTimeout(() => {
-      markerRefs.current.get(focusId)?.openPopup()
-      onDone?.()
-    }, 1300)
+    const marker = markerRefs.current.get(focusId)
+    if (!marker) return
+    const cg = clusterGroupRef.current
+    if (cg) {
+      cg.zoomToShowLayer(marker, () => {
+        map.flyTo(marker.getLatLng(), 15, { animate: true, duration: 1.2 })
+        setTimeout(() => { marker.openPopup(); onFocusDone?.() }, 1300)
+      })
+    } else {
+      map.flyTo(marker.getLatLng(), 15, { animate: true, duration: 1.2 })
+      setTimeout(() => { marker.openPopup(); onFocusDone?.() }, 1300)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusId])
+
   return null
 }
 
@@ -84,10 +170,15 @@ interface Props {
 export default function MapPanel({ complexes, onMarkerClick, theme = 'light', hoveredId, mapFocusId, onMapFocusDone }: Props) {
   const tr = useT()
   const tStatus = useTStatus()
+  const { lang } = useLang()
   const markerRefs = useRef<Map<string, L.Marker>>(new Map())
+  const clusterGroupRef = useRef<any>(null)
   const tileUrl = theme === 'dark'
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
     : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+
+  // tStatus is only used in popup HTML (non-React), so we pass the label string
+  void tStatus
 
   return (
     <MapContainer
@@ -99,62 +190,16 @@ export default function MapPanel({ complexes, onMarkerClick, theme = 'light', ho
     >
       <TileLayer url={tileUrl} attribution="© OpenStreetMap © CARTO" maxZoom={19} />
       <FitBounds complexes={complexes} />
-      <MapController complexes={complexes} focusId={mapFocusId} markerRefs={markerRefs} onDone={onMapFocusDone} />
-      {complexes.map(c => {
-        const ss = statusStyle(c.status)
-        const isHovered = c.id === hoveredId
-        return (
-          <Marker
-            key={c.id}
-            position={[c.lat, c.lng]}
-            icon={isHovered ? GOLD_ICON_ACTIVE : GOLD_ICON}
-            zIndexOffset={isHovered ? 1000 : 0}
-            ref={(ref) => { if (ref) markerRefs.current.set(c.id, ref as unknown as L.Marker) }}
-            eventHandlers={{
-              mouseover: (e) => e.target.openPopup(),
-              mouseout: (e) => e.target.closePopup(),
-              click: () => onMarkerClick(c.id),
-            }}
-          >
-            <Popup>
-              <div style={{ width:220, overflow:'hidden', background:'var(--popup-bg)', color:'var(--t1)' }}>
-                {c.image && (
-                  <div style={{ height:105, overflow:'hidden', position:'relative' }}>
-                    <img src={c.image} alt={c.name}
-                      style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.65)' }}
-                    />
-                    <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 55%)' }} />
-                  </div>
-                )}
-                <div style={{ padding:'0.6rem' }}>
-                  <div style={{ fontFamily:'var(--font-mono)', fontSize:'0.56rem', color:'var(--t3)', marginBottom:3 }}>{c.developer}</div>
-                  <div style={{ fontFamily:'var(--font-serif)', fontSize:'1.05rem', fontWeight:400, color:'var(--t1)', marginBottom:4 }}>{c.name}</div>
-                  <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5 }}>
-                    <span style={{ fontFamily:'var(--font-mono)', fontSize:'0.78rem', color:'var(--gold-b)' }}>${c.price_usd.toLocaleString()}</span>
-                    <span style={{
-                      fontFamily:'var(--font-mono)', fontSize:'0.52rem',
-                      background:ss.bg, border:`1px solid ${ss.border}`,
-                      color:ss.color, padding:'1px 5px', borderRadius:2,
-                    }}>{tStatus(c.status)}</span>
-                  </div>
-                  <button onClick={() => onMarkerClick(c.id)} style={{
-                    width:'100%', background:'rgba(160,120,32,0.1)', border:'1px solid rgba(160,120,32,0.28)',
-                    color:'var(--gold)', cursor:'pointer',
-                    fontFamily:'var(--font-mono)', fontSize:'0.62rem', letterSpacing:'0.06em',
-                    padding:'0.35rem', display:'flex', alignItems:'center', justifyContent:'center', gap:4,
-                    transition:'background 0.2s',
-                  }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(160,120,32,0.18)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'rgba(160,120,32,0.1)')}
-                  >
-                    {tr('map.details')} <ArrowRight size={11} />
-                  </button>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        )
-      })}
+      <ClusterLayer
+        complexes={complexes}
+        onMarkerClick={onMarkerClick}
+        hoveredId={hoveredId}
+        markerRefs={markerRefs}
+        clusterGroupRef={clusterGroupRef}
+        detailsLabel={tr('map.details')}
+        focusId={mapFocusId}
+        onFocusDone={onMapFocusDone}
+      />
     </MapContainer>
   )
 }
