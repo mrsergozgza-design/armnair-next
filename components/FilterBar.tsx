@@ -168,8 +168,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
 
   return (
     <div style={{
-      // On desktop: parent sticky wrapper handles positioning; on mobile: sticky itself
-      ...(isMobile ? { position: 'sticky' as const, top: 64, zIndex: 40 } : { flexShrink: 0 }),
+      position: 'sticky' as const, top: 64, zIndex: 40,
       background:'var(--filter-bg)',
       backdropFilter:'blur(24px)', WebkitBackdropFilter:'blur(24px)',
       borderBottom:'1px solid var(--border-c)',

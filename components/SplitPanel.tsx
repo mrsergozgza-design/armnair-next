@@ -42,14 +42,17 @@ interface Props {
   onShareFavorites?: () => void
   onClearFavorites?: () => void
   topContent?: React.ReactNode
+  noMap?: boolean
+  onHoveredChange?: (id: string | null) => void
 }
 
-export default function SplitPanel({ id, complexes, isLoading = false, openMobileMap = 0, onCardClick, mapFocusId, onMapFocusDone, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites, onClearFavorites, topContent }: Props) {
+export default function SplitPanel({ id, complexes, isLoading = false, openMobileMap = 0, onCardClick, mapFocusId, onMapFocusDone, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites, onClearFavorites, topContent, noMap = false, onHoveredChange }: Props) {
   const { theme } = useTheme()
 
   const tr = useT()
   const { showToast } = useToast()
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const setHovered = (id: string | null) => { setHoveredId(id); onHoveredChange?.(id) }
   const [mapOpen, setMapOpen] = useState(false)
 
   // Open mobile map when parent requests it (openMobileMap counter increments)
@@ -75,26 +78,22 @@ export default function SplitPanel({ id, complexes, isLoading = false, openMobil
     )
   }
 
-  return (
-    // Outer: fills remaining height given by sticky parent wrapper in page.tsx
-    <div id={id} style={{
-      flex: 1,
-      minHeight: 0,
-      display: 'flex',
-      flexDirection: 'row',
-      overflow: 'hidden',
-    }}>
-      {/* Cards panel — scrolls internally */}
-      <div style={{
-        flexShrink: 0,
+  // noMap mode: left panel only, natural height (used when map is in page-level right column)
+  const leftPanelStyle = noMap
+    ? { padding: '1.25rem', boxSizing: 'border-box' as const }
+    : {
+        flexShrink: 0 as const,
         width: '45%',
         height: '100%',
         borderRight: '1px solid var(--border-c)',
         padding: '1.25rem',
-        overflowY: 'auto',
-        boxSizing: 'border-box',
+        overflowY: 'auto' as const,
+        boxSizing: 'border-box' as const,
         transition: 'border-color 0.25s',
-      }}>
+      }
+
+  const cardPanel = (
+    <div style={leftPanelStyle}>
         {/* Mobile: map toggle button */}
         {isMobile && (
           <button
@@ -226,7 +225,7 @@ export default function SplitPanel({ id, complexes, isLoading = false, openMobil
               <PropertyCard
                 key={c.id} complex={c}
                 onClick={() => onCardClick(c.id)}
-                onHover={setHoveredId}
+                onHover={setHovered}
                 isFavorite={favorites?.has(c.id)}
                 onToggleFavorite={() => onToggleFavorite?.(c.id)}
                 inCompare={compareIds?.includes(c.id)}
@@ -235,25 +234,37 @@ export default function SplitPanel({ id, complexes, isLoading = false, openMobil
             ))}
           </div>
         )}
-      </div>
+    </div>
+  )
+
+  if (noMap) return cardPanel
+
+  return (
+    // Outer: fills remaining height given by sticky parent wrapper in page.tsx
+    <div id={id} style={{
+      flex: 1,
+      minHeight: 0,
+      display: 'flex',
+      flexDirection: 'row',
+      overflow: 'hidden',
+    }}>
+      {cardPanel}
 
       {/* Map panel — fills remaining width, no scroll */}
-      {!isMobile && (
-        <div id="right-panel" style={{
-          flex: 1,
-          height: '100%',
-          overflow: 'hidden',
-        }}>
-          <MapPanel
-            complexes={complexes}
-            onMarkerClick={onCardClick}
-            theme={theme}
-            hoveredId={hoveredId}
-            mapFocusId={mapFocusId}
-            onMapFocusDone={onMapFocusDone}
-          />
-        </div>
-      )}
+      <div id="right-panel" style={{
+        flex: 1,
+        height: '100%',
+        overflow: 'hidden',
+      }}>
+        <MapPanel
+          complexes={complexes}
+          onMarkerClick={onCardClick}
+          theme={theme}
+          hoveredId={hoveredId}
+          mapFocusId={mapFocusId}
+          onMapFocusDone={onMapFocusDone}
+        />
+      </div>
 
       {/* Fullscreen map overlay (mobile) */}
       {mapFullscreen && (
