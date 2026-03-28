@@ -91,6 +91,7 @@ const T: Dict = {
   'tax.realPayment':    { en: 'Your real interest payment',  ru: 'Ваш реальный платеж по %',     am: 'Your real interest payment' },
   'tax.annualBenefit':  { en: 'Annual benefit',              ru: 'Итоговая выгода за год',        am: 'Annual benefit' },
   'tax.disclaimer':     { en: '* Calculation is approximate. Max refund is capped at 1.5M ֏ per quarter under RA law.', ru: '* Расчет является приблизительным. Максимальный возврат ограничен 1.5 млн ֏ в квартал согласно законодательству РА.', am: '* Calculation is approximate. Max refund is capped at 1.5M ֏ per quarter under RA law.' },
+  'calc.currency':      { en: 'Currency',             ru: 'Валюта',                    am: 'Արժույթ' },
 
   // ── Payment Plan labels ───────────────────────────────────────────────
   'pay.deposit':     { en: 'Down',         ru: 'Взнос',          am: 'Down' },

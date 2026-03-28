@@ -74,6 +74,8 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   const [interestRate, setInterestRate] = useState(11)
   const [loanPct, setLoanPct] = useState(0.80)
   const [salary, setSalary] = useState(600000)
+  const [calcCurrency, setCalcCurrency] = useState<'AMD' | 'USD'>('AMD')
+  const [usdRate, setUsdRate] = useState(390)
   const [mounted, setMounted] = useState(false)
   const [heartAnim, setHeartAnim] = useState(false)
   const [heroIdx, setHeroIdx] = useState(0)
@@ -105,6 +107,13 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
     return () => document.removeEventListener('keydown', handleKey)
   }, [onClose])
 
+  useEffect(() => {
+    fetch('/api/currency')
+      .then(r => r.json())
+      .then(d => { if (d.rate) setUsdRate(d.rate) })
+      .catch(() => {})
+  }, [])
+
   if (!c) return null
 
   // ── Units derived data (computed at component level for use in both columns) ──
@@ -127,6 +136,14 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   // Tax calculator
   const INCOME_TAX_RATE = 0.20
   const MONTHLY_REFUND_CAP = 500_000
+
+  const fmtCalc = (amdVal: number) => {
+    if (calcCurrency === 'USD') {
+      const usd = Math.round(amdVal / usdRate)
+      return usd >= 1000 ? `$${(usd / 1000).toFixed(1)}K` : `$${usd.toLocaleString()}`
+    }
+    return fmtAmd(amdVal)
+  }
 
   const priceAmd = c.price_amd * area
   const loanStep = 1_000_000
@@ -593,15 +610,29 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
 
               {/* Tax calculator */}
               <div style={{ background: 'rgba(160,120,32,0.05)', border: '1px solid rgba(160,120,32,0.12)', borderRadius: 4, padding: '1rem' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#A07820', letterSpacing: '0.12em', marginBottom: 12, textTransform: 'uppercase' }}>
-                  {tr('tax.title')}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#A07820', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                    {tr('tax.title')}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--tm)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{tr('calc.currency')}</span>
+                    {(['AMD', 'USD'] as const).map(cur => (
+                      <button key={cur} onClick={() => setCalcCurrency(cur)}
+                        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', padding: '2px 8px', borderRadius: 2, border: '1px solid rgba(160,120,32,0.4)', cursor: 'pointer', letterSpacing: '0.06em',
+                          background: calcCurrency === cur ? '#A07820' : 'transparent',
+                          color: calcCurrency === cur ? '#fff' : 'var(--tm)',
+                        }}>
+                        {cur}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>{tr('tax.objParams')}</div>
                 <div style={{ marginBottom: 4 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>{tr('tax.area')}</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{area} м²  ·  {fmtAmd(priceAmd)}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{area} м²  ·  {fmtCalc(priceAmd)}</span>
                   </div>
                   <input type="range" min={30} max={300} value={area}
                     onChange={e => setArea(Number(e.target.value))}
@@ -613,7 +644,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                 <div style={{ marginBottom: 4 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>{tr('tax.loanAmount')}</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{fmtAmd(loanAmt)} · {tr('tax.downPayment')} {downPct}%</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{fmtCalc(loanAmt)} · {tr('tax.downPayment')} {downPct}%</span>
                   </div>
                   <input type="range" min={loanMin} max={loanMax} step={loanStep} value={loanAmt}
                     onChange={e => setLoanPct(Number(e.target.value) / priceAmd)}
@@ -633,7 +664,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                 <div style={{ marginBottom: 12 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t3)' }}>{tr('tax.officialSalary')}</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{fmtAmd(salary)}{tr('tax.perMonth')}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: '#C9A96E' }}>{fmtCalc(salary)}{tr('tax.perMonth')}</span>
                   </div>
                   <input type="range" min={200000} max={2000000} step={50000} value={salary}
                     onChange={e => setSalary(Number(e.target.value))}
@@ -642,9 +673,9 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
 
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8, paddingTop: 4, borderTop: '1px solid rgba(160,120,32,0.12)' }}>{tr('tax.results')}</div>
                 {[
-                  { label: tr('tax.incomeTax'),  value: fmtAmd(Math.round(incomeTax)) + tr('tax.perMonth') },
-                  { label: tr('tax.monthlyInt'), value: fmtAmd(Math.round(monthlyInterest)) },
-                  { label: tr('tax.refundAmt'),  value: c.tax_refund ? fmtAmd(Math.round(refundAmt)) + tr('tax.perMonth') : tr('modal.no'), color: c.tax_refund ? '#2A9D8F' : 'var(--tm)' },
+                  { label: tr('tax.incomeTax'),  value: fmtCalc(Math.round(incomeTax)) + tr('tax.perMonth') },
+                  { label: tr('tax.monthlyInt'), value: fmtCalc(Math.round(monthlyInterest)) },
+                  { label: tr('tax.refundAmt'),  value: c.tax_refund ? fmtCalc(Math.round(refundAmt)) + tr('tax.perMonth') : tr('modal.no'), color: c.tax_refund ? '#2A9D8F' : 'var(--tm)' },
                 ].map((row, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '0.32rem 0', borderBottom: '1px solid rgba(160,120,32,0.06)', gap: 12 }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--tm)' }}>{row.label}</span>
@@ -653,12 +684,12 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
                 ))}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '0.45rem 0', gap: 12 }}>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.63rem', color: 'var(--t2)', fontWeight: 700 }}>{tr('tax.realPayment')}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#C9A96E', fontWeight: 700, flexShrink: 0 }}>{fmtAmd(Math.round(realPayment))}{tr('tax.perMonth')}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#C9A96E', fontWeight: 700, flexShrink: 0 }}>{fmtCalc(Math.round(realPayment))}{tr('tax.perMonth')}</span>
                 </div>
                 {c.tax_refund && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, padding: '0.6rem 0.75rem', background: 'rgba(160,120,32,0.12)', border: '1px solid rgba(160,120,32,0.3)', borderRadius: 3, gap: 12 }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#C9A96E', letterSpacing: '0.04em' }}>{tr('tax.annualBenefit')}</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: '#C9A96E', fontWeight: 600, flexShrink: 0 }}>{fmtAmd(Math.round(refundAmt * 12))}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: '#C9A96E', fontWeight: 600, flexShrink: 0 }}>{fmtCalc(Math.round(refundAmt * 12))}</span>
                   </div>
                 )}
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.57rem', color: 'var(--tm)', marginTop: 12, lineHeight: 1.6, opacity: 0.75 }}>
