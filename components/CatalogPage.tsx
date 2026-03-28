@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react'
 import { Complex } from '@/lib/types'
 import { fmtAmd, statusStyle, freshLabel, priceGrowth, parseYield } from '@/lib/utils'
 import FilterBar from './FilterBar'
+import ScrollToTopButton from './ScrollToTopButton'
 import PropertyCard from './PropertyCard'
 import PropertyCardSkeleton from './PropertyCardSkeleton'
 import { ArrowUpDown } from 'lucide-react'
@@ -207,6 +208,7 @@ export default function CatalogPage({ data, isLoading = false, onOpenModal, onBa
           </div>
         )}
       </div>
+      <ScrollToTopButton />
     </div>
   )
 }

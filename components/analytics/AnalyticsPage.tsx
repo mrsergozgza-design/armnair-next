@@ -9,6 +9,7 @@ import { Complex } from '@/lib/types'
 import { fmtAmd, statusStyle, parseYield } from '@/lib/utils'
 import { ArrowRight, TrendingUp } from 'lucide-react'
 import { useT, useTStatus } from '@/lib/StaticTranslationProvider'
+import ScrollToTopButton from '@/components/ScrollToTopButton'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
@@ -240,6 +241,7 @@ export default function AnalyticsPage({ data, onOpenModal, onBack }: AnalyticsPa
           </div>
         </div>
       </div>
+      <ScrollToTopButton />
     </div>
   )
 }
