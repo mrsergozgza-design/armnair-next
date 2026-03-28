@@ -270,6 +270,8 @@ const RU_STATUS_NORM: Record<string, string> = {
   'Off-plan':            'OffPlan',
   'Offplan':             'OffPlan',
   'Under Construction':  'UnderConstruction',
+  'Underconstruction':   'UnderConstruction',
+  'underconstruction':   'UnderConstruction',
   'Pre-sale':            'PreSale',
   'Pre-Sale':            'PreSale',
 }

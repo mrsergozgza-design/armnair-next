@@ -6,6 +6,7 @@ import { useFavorites } from '@/lib/useFavorites'
 import { useCompare } from '@/lib/useCompare'
 import { useLang } from '@/lib/LanguageContext'
 import { useT } from '@/lib/StaticTranslationProvider'
+import { statusKey } from '@/lib/translations'
 import { useToast } from '@/lib/ToastContext'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
@@ -127,7 +128,7 @@ export default function Home() {
       if (c.price_usd > filters.price)                            return false
       if (filters.tax === 'yes' && !c.tax_refund)                 return false
       if (filters.tax === 'no'  &&  c.tax_refund)                 return false
-      if (filters.status && c.status !== filters.status)          return false
+      if (filters.status && statusKey(c.status) !== statusKey(filters.status)) return false
       if (filters.search) {
         const hay = (c.name + ' ' + c.district + ' ' + c.developer).toLowerCase()
         if (!hay.includes(filters.search.toLowerCase())) return false

@@ -5,6 +5,7 @@ import { Complex } from '@/lib/types'
 import { useLang } from '@/lib/LanguageContext'
 import { useT, useTStatus, useTDistrict } from '@/lib/StaticTranslationProvider'
 import { useIsMobile } from '@/lib/useIsMobile'
+import { statusKey } from '@/lib/translations'
 
 interface Filters {
   district: string; developer: string; price: number
@@ -110,7 +111,14 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
   const tDistrict = useTDistrict()
   const districts  = Array.from(new Set(data.map(c => c.district))).sort()
   const developers = Array.from(new Set(data.map(c => c.developer))).sort()
-  const statuses   = Array.from(new Set(data.map(c => c.status))).sort()
+  // Deduplicate statuses by normalized key (e.g. "Underconstruction" and "Under Construction" → same entry)
+  const statuses = Array.from(
+    data.reduce((map, c) => {
+      const k = statusKey(c.status)
+      if (!map.has(k)) map.set(k, c.status)
+      return map
+    }, new Map<string, string>()).values()
+  ).sort()
 
   const set = (k: keyof Filters, v: string | number) => onFiltersChange({ ...filters, [k]: v })
   const reset = () => onFiltersChange({ district:'', developer:'', price:9_999_999, tax:'', status:'', search:'' })

@@ -7,6 +7,7 @@ import PropertyCard from './PropertyCard'
 import PropertyCardSkeleton from './PropertyCardSkeleton'
 import { ArrowUpDown } from 'lucide-react'
 import { useT } from '@/lib/StaticTranslationProvider'
+import { statusKey } from '@/lib/translations'
 import { useToast } from '@/lib/ToastContext'
 
 interface Filters {
@@ -47,7 +48,7 @@ export default function CatalogPage({ data, isLoading = false, onOpenModal, onBa
       if (c.price_usd > filters.price)                            return false
       if (filters.tax === 'yes' && !c.tax_refund)                 return false
       if (filters.tax === 'no'  &&  c.tax_refund)                 return false
-      if (filters.status && c.status !== filters.status)          return false
+      if (filters.status && statusKey(c.status) !== statusKey(filters.status)) return false
       if (filters.search) {
         const hay = (c.name + ' ' + c.district + ' ' + c.developer).toLowerCase()
         if (!hay.includes(filters.search.toLowerCase())) return false
