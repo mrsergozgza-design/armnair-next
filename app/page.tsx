@@ -296,6 +296,23 @@ export default function Home() {
                     {tr('page.footer')}
                   </span>
                 </footer>
+                {/* Back to top — sticky inside left panel */}
+                <button
+                  aria-label={tr('page.backToTop')}
+                  onClick={() => leftPanelRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+                  style={{
+                    position: 'sticky', bottom: 16, marginLeft: 'auto', marginRight: 16,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 44, height: 44, borderRadius: '50%',
+                    background: '#b8942a', border: 'none',
+                    cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+                    opacity: scrolled ? 1 : 0,
+                    pointerEvents: scrolled ? 'auto' : 'none',
+                    transition: 'opacity 0.25s',
+                  }}
+                >
+                  <span style={{ color: '#fff', fontSize: '1.1rem', lineHeight: 1, marginTop: -2 }}>↑</span>
+                </button>
               </div>
               {/* Right column: map fills remaining width, full height */}
               <div id="right-panel" style={{
@@ -351,23 +368,6 @@ export default function Home() {
       />
       <ConsultModal open={consultOpen} onClose={() => setConsultOpen(false)} propertyName={selectedComplex?.name} />
 
-      {/* Back to top button */}
-      <button
-        aria-label={tr('page.backToTop')}
-        onClick={() => leftPanelRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
-        style={{
-          position: 'fixed', bottom: 80, left: 16, zIndex: 500,
-          width: 44, height: 44, borderRadius: '50%',
-          background: '#b8942a', border: 'none',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-          opacity: scrolled ? 1 : 0,
-          pointerEvents: scrolled ? 'auto' : 'none',
-          transition: 'opacity 0.25s',
-        }}
-      >
-        <span style={{ color: '#fff', fontSize: '1.1rem', lineHeight: 1, marginTop: -2 }}>↑</span>
-      </button>
       {compareOpen && compareComplexes.length > 0 && (
         <ComparisonModal
           complexes={compareComplexes}
