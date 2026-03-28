@@ -58,10 +58,10 @@ export default function SplitPanel({ id, complexes, isLoading = false, openMobil
   const [mapFullscreen, setMapFullscreen] = useState(false)
   const isMobile = useIsMobile()
 
-  // On mobile: show map fullscreen — cards are accessible via Catalog tab
+  // On mobile: map fixed-height block, no scroll
   if (isMobile) {
     return (
-      <div id={id} style={{ height: '40vh', position: 'relative' }}>
+      <div id={id} style={{ height: '40vh', position: 'relative', flexShrink: 0, overflow: 'hidden' }}>
         <MapPanel
           complexes={complexes}
           onMarkerClick={onCardClick}
@@ -75,18 +75,24 @@ export default function SplitPanel({ id, complexes, isLoading = false, openMobil
   }
 
   return (
-    <div id={id} style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
-      {/* Cards panel */}
+    // Outer: sticky below navbar, fills remaining viewport, overflow hidden — map never scrolls
+    <div id={id} style={{
+      position: 'sticky',
+      top: 64,
+      height: 'calc(100vh - 64px)',
+      display: 'flex',
+      flexDirection: 'row',
+      overflow: 'hidden',
+    }}>
+      {/* Cards panel — scrolls internally */}
       <div style={{
         flexShrink: 0,
-        width: isMobile ? '100%' : '45%',
-        minWidth: 0,
-        borderRight: isMobile ? 'none' : '1px solid var(--border-c)',
-        padding: isMobile ? '0.75rem' : '1.25rem',
-        height: isMobile ? 'auto' : 'calc(100vh - 64px)',
-        overflowY: isMobile ? 'visible' : 'auto',
-        position: isMobile ? 'static' : 'sticky',
-        top: isMobile ? undefined : 64,
+        width: '45%',
+        height: '100%',
+        borderRight: '1px solid var(--border-c)',
+        padding: '1.25rem',
+        overflowY: 'auto',
+        boxSizing: 'border-box',
         transition: 'border-color 0.25s',
       }}>
         {/* Mobile: map toggle button */}
@@ -229,12 +235,11 @@ export default function SplitPanel({ id, complexes, isLoading = false, openMobil
         )}
       </div>
 
-      {/* Desktop: sticky map */}
+      {/* Map panel — fills remaining width, no scroll */}
       {!isMobile && (
         <div id="right-panel" style={{
-          flexShrink: 0, width: '55%',
-          position: 'sticky', top: 64,
-          height: 'calc(100vh - 64px)',
+          flex: 1,
+          height: '100%',
           overflow: 'hidden',
         }}>
           <MapPanel
