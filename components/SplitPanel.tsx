@@ -41,9 +41,10 @@ interface Props {
   onToggleCompare?: (id: string) => void
   onShareFavorites?: () => void
   onClearFavorites?: () => void
+  topContent?: React.ReactNode
 }
 
-export default function SplitPanel({ id, complexes, isLoading = false, openMobileMap = 0, onCardClick, mapFocusId, onMapFocusDone, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites, onClearFavorites }: Props) {
+export default function SplitPanel({ id, complexes, isLoading = false, openMobileMap = 0, onCardClick, mapFocusId, onMapFocusDone, favorites, onToggleFavorite, favOnly = false, onClearFavOnly, compareIds, onToggleCompare, onShareFavorites, onClearFavorites, topContent }: Props) {
   const { theme } = useTheme()
 
   const tr = useT()
@@ -75,11 +76,10 @@ export default function SplitPanel({ id, complexes, isLoading = false, openMobil
   }
 
   return (
-    // Outer: sticky below navbar, fills remaining viewport, overflow hidden — map never scrolls
+    // Outer: fills remaining height given by sticky parent wrapper in page.tsx
     <div id={id} style={{
-      position: 'sticky',
-      top: 64,
-      height: 'calc(100vh - 64px)',
+      flex: 1,
+      minHeight: 0,
       display: 'flex',
       flexDirection: 'row',
       overflow: 'hidden',
@@ -190,6 +190,8 @@ export default function SplitPanel({ id, complexes, isLoading = false, openMobil
             </button>
           </div>
         )}
+
+        {topContent}
 
         {isLoading ? (
           <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 12 : 14 }}>

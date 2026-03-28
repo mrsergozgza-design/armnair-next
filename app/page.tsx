@@ -6,6 +6,7 @@ import { useFavorites } from '@/lib/useFavorites'
 import { useCompare } from '@/lib/useCompare'
 import { useLang } from '@/lib/LanguageContext'
 import { useT } from '@/lib/StaticTranslationProvider'
+import { useIsMobile } from '@/lib/useIsMobile'
 import { statusKey } from '@/lib/translations'
 import { useToast } from '@/lib/ToastContext'
 import Navbar from '@/components/Navbar'
@@ -31,6 +32,7 @@ export default function Home() {
   const { lang } = useLang()
   const tr = useT()
   const { showToast } = useToast()
+  const isMobile = useIsMobile()
   const [data, setData]         = useState<Complex[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters]   = useState<Filters>(DEFAULT_FILTERS)
@@ -157,52 +159,61 @@ export default function Home() {
       <Navbar activePage={page} onNav={handleNav} favCount={favCount} favOnly={favOnly} onFavFilter={() => setFavOnly(v => !v)} compareCount={compareCount} onOpenCompare={() => setCompareOpen(true)} />
       <MobileTabBar activePage={page} onNav={handleNav} favCount={favCount} favOnly={favOnly} onFavFilter={() => setFavOnly(v => !v)} compareCount={compareCount} onOpenCompare={() => setCompareOpen(true)} />
 
-      {/* Collection mode banner */}
-      {collectionMode && (
-        <div style={{
-          position: 'sticky', top: 64, zIndex: 900,
-          background: 'linear-gradient(90deg, rgba(160,120,32,0.18) 0%, rgba(160,120,32,0.08) 100%)',
-          borderBottom: '1px solid rgba(160,120,32,0.35)',
-          padding: '0.6rem 2rem',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-          backdropFilter: 'blur(12px)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: '#C9A96E', fontSize: '0.9rem' }}>✦</span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#C9A96E', letterSpacing: '0.1em' }}>
-              {tr('page.collection')} · {collectionIds.length} {
-                lang === 'ru'
-                  ? (collectionIds.length === 1 ? tr('page.item') : collectionIds.length < 5 ? tr('page.items2') : tr('page.items5'))
-                  : tr('page.item')
-              }
-            </span>
-          </div>
-          <button
-            onClick={exitCollectionMode}
-            style={{
-              background: 'none', border: '1px solid rgba(160,120,32,0.35)',
-              color: 'var(--t3)', cursor: 'pointer',
-              fontFamily: 'var(--font-mono)', fontSize: '0.58rem', letterSpacing: '0.08em',
-              padding: '3px 10px', borderRadius: 2,
-              transition: 'all 0.2s', flexShrink: 0,
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#C9A96E'; e.currentTarget.style.borderColor = '#C9A96E' }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.borderColor = 'rgba(160,120,32,0.35)' }}
-          >
-            {tr('page.seeAll')}
-          </button>
-        </div>
-      )}
-
       {page === 'analytics'
         ? <AnalyticsPage data={data} onOpenModal={setSelectedId} onBack={() => setPage('home')} />
         : page === 'catalog'
         ? <CatalogPage data={data} isLoading={isLoading} onOpenModal={setSelectedId} onBack={() => setPage('home')} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} />
         : <>
             <Hero />
-            <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />
-            <StatsRow data={data} />
-            <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} />
+            {/* Sticky wrapper: FilterBar + SplitPanel fill remaining viewport on desktop */}
+            <div style={isMobile ? {} : {
+              position: 'sticky' as const,
+              top: 64,
+              height: 'calc(100vh - 64px)',
+              display: 'flex',
+              flexDirection: 'column' as const,
+              overflow: 'visible',
+              zIndex: 30,
+            }}>
+              {collectionMode && (
+                <div style={{
+                  ...(isMobile ? { position: 'sticky' as const, top: 64, zIndex: 900 } : { zIndex: 50 }),
+                  background: 'linear-gradient(90deg, rgba(160,120,32,0.18) 0%, rgba(160,120,32,0.08) 100%)',
+                  borderBottom: '1px solid rgba(160,120,32,0.35)',
+                  padding: '0.6rem 2rem',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                  backdropFilter: 'blur(12px)',
+                  flexShrink: 0,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: '#C9A96E', fontSize: '0.9rem' }}>✦</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#C9A96E', letterSpacing: '0.1em' }}>
+                      {tr('page.collection')} · {collectionIds.length} {
+                        lang === 'ru'
+                          ? (collectionIds.length === 1 ? tr('page.item') : collectionIds.length < 5 ? tr('page.items2') : tr('page.items5'))
+                          : tr('page.item')
+                      }
+                    </span>
+                  </div>
+                  <button
+                    onClick={exitCollectionMode}
+                    style={{
+                      background: 'none', border: '1px solid rgba(160,120,32,0.35)',
+                      color: 'var(--t3)', cursor: 'pointer',
+                      fontFamily: 'var(--font-mono)', fontSize: '0.58rem', letterSpacing: '0.08em',
+                      padding: '3px 10px', borderRadius: 2,
+                      transition: 'all 0.2s', flexShrink: 0,
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = '#C9A96E'; e.currentTarget.style.borderColor = '#C9A96E' }}
+                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.borderColor = 'rgba(160,120,32,0.35)' }}
+                  >
+                    {tr('page.seeAll')}
+                  </button>
+                </div>
+              )}
+              <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />
+              <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} topContent={<StatsRow data={data} />} />
+            </div>
             <footer style={{
               borderTop:'1px solid var(--border-c)',
               background:'var(--bg)',
