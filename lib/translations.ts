@@ -17,6 +17,7 @@ const T: Dict = {
   // ── FilterBar ─────────────────────────────────────────────────────────
   'filter.city':     { en: 'Yerevan',       ru: 'Ереван',         am: 'Yerevan' },
   'filter.search':   { en: 'Search...',     ru: 'Поиск...',       am: 'Search...' },
+  'filter.notSelected': { en: 'Not selected', ru: 'Не выбрано',     am: 'Չի ընտրված' },
   'filter.district': { en: 'District',      ru: 'Район',          am: 'District' },
   'filter.developer':{ en: 'Developer',     ru: 'Застройщик',     am: 'Developer' },
   'filter.price':    { en: 'Price: any',    ru: 'Цена: любая',    am: 'Price: any' },

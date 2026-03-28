@@ -131,18 +131,20 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
     return `${resultCount} ${tr('filter.objectsN')}`
   }
 
+  const notSelected = tr('filter.notSelected')
+
   const districtOpts: Option[] = [
-    { value: '', label: tr('filter.district'), _active: false },
+    { value: '', label: notSelected, _active: false },
     ...districts.map(d => ({ value: d, label: tDistrict(d), _active: filters.district === d })),
   ]
 
   const developerOpts: Option[] = [
-    { value: '', label: tr('filter.developer'), _active: false },
+    { value: '', label: notSelected, _active: false },
     ...developers.map(d => ({ value: d, label: d, _active: filters.developer === d })),
   ]
 
   const priceOpts: Option[] = [
-    { value: 9_999_999, label: tr('filter.price'),    _active: false },
+    { value: 9_999_999, label: notSelected,           _active: false },
     { value: 50_000,    label: tr('filter.price50'),  _active: filters.price === 50_000 },
     { value: 100_000,   label: tr('filter.price100'), _active: filters.price === 100_000 },
     { value: 200_000,   label: tr('filter.price200'), _active: filters.price === 200_000 },
@@ -150,7 +152,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
   ]
 
   const statusOpts: Option[] = [
-    { value: '', label: tr('filter.status'), _active: false },
+    { value: '', label: notSelected, _active: false },
     ...statuses
       .map(s => ({ value: s, label: tStatus(s), _active: filters.status === s }))
       .filter(o => !o.label.startsWith('status.'))                                // drop untranslated raw keys
@@ -158,7 +160,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
   ]
 
   const taxOpts: Option[] = [
-    { value: '',    label: tr('filter.taxRefund'), _active: false },
+    { value: '',    label: notSelected, _active: false },
     { value: 'yes', label: tr('filter.taxYes'),   _active: filters.tax === 'yes' },
     { value: 'no',  label: tr('filter.taxNo'),    _active: filters.tax === 'no' },
   ]
