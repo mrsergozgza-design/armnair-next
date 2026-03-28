@@ -356,7 +356,7 @@ export default function Home() {
         aria-label={tr('page.backToTop')}
         onClick={() => leftPanelRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
         style={{
-          position: 'fixed', bottom: 80, right: 16, zIndex: 500,
+          position: 'fixed', bottom: 80, left: 16, zIndex: 500,
           width: 44, height: 44, borderRadius: '50%',
           background: '#b8942a', border: 'none',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
