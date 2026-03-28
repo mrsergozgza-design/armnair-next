@@ -168,7 +168,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data 
 
   return (
     <div style={{
-      position: 'sticky' as const, top: 0, zIndex: 40,
+      zIndex: 40,
       background:'var(--filter-bg)',
       backdropFilter:'blur(24px)', WebkitBackdropFilter:'blur(24px)',
       borderBottom:'1px solid var(--border-c)',
