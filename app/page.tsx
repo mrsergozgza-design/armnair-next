@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { Complex } from '@/lib/types'
 import { FALLBACK } from '@/lib/data'
@@ -52,6 +52,7 @@ export default function Home() {
   const { theme } = useTheme()
   const isMobile = useIsMobile()
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const leftPanelRef = useRef<HTMLDivElement>(null)
   const [data, setData]         = useState<Complex[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters]   = useState<Filters>(DEFAULT_FILTERS)
@@ -77,10 +78,12 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 300)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    const el = leftPanelRef.current
+    if (!el) return
+    const onScroll = () => setScrolled(el.scrollTop > 300)
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [page, isMobile])
 
   // Read ?property= from URL on mount
   useEffect(() => {
@@ -241,7 +244,7 @@ export default function Home() {
             {/* Desktop: two-column layout */}
             <div style={{ marginTop: 64, display: 'flex', height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
               {/* Left column: scrolls internally, FilterBar sticks when Hero scrolls past */}
-              <div style={{ width: '45%', minWidth: 0, height: '100%', overflowY: 'auto' }}>
+              <div ref={leftPanelRef} style={{ width: '45%', minWidth: 0, height: '100%', overflowY: 'auto' }}>
                 <Hero />
                 {collectionMode && (
                   <div style={{
@@ -351,10 +354,10 @@ export default function Home() {
       {/* Back to top button */}
       <button
         aria-label={tr('page.backToTop')}
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onClick={() => leftPanelRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
         style={{
           position: 'fixed', bottom: 80, right: 16, zIndex: 500,
-          width: 40, height: 40, borderRadius: '50%',
+          width: 44, height: 44, borderRadius: '50%',
           background: '#b8942a', border: 'none',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
