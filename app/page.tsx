@@ -240,65 +240,59 @@ export default function Home() {
         : <>
             {/* Desktop: two-column layout */}
             <div style={{ marginTop: 64, display: 'flex', height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
-              {/* Left column: FilterBar pinned at top, content scrolls below */}
-              <div style={{ width: '45%', minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                {/* Pinned header: collection banner + FilterBar */}
-                <div style={{ flexShrink: 0, zIndex: 50, position: 'relative' }}>
-                  {collectionMode && (
-                    <div style={{
-                      background: 'linear-gradient(90deg, rgba(160,120,32,0.18) 0%, rgba(160,120,32,0.08) 100%)',
-                      borderBottom: '1px solid rgba(160,120,32,0.35)',
-                      padding: '0.6rem 2rem',
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                      backdropFilter: 'blur(12px)',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ color: '#C9A96E', fontSize: '0.9rem' }}>✦</span>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#C9A96E', letterSpacing: '0.1em' }}>
-                          {tr('page.collection')} · {collectionIds.length} {
-                            lang === 'ru'
-                              ? (collectionIds.length === 1 ? tr('page.item') : collectionIds.length < 5 ? tr('page.items2') : tr('page.items5'))
-                              : tr('page.item')
-                          }
-                        </span>
-                      </div>
-                      <button
-                        onClick={exitCollectionMode}
-                        style={{
-                          background: 'none', border: '1px solid rgba(160,120,32,0.35)',
-                          color: 'var(--t3)', cursor: 'pointer',
-                          fontFamily: 'var(--font-mono)', fontSize: '0.58rem', letterSpacing: '0.08em',
-                          padding: '3px 10px', borderRadius: 2,
-                          transition: 'all 0.2s', flexShrink: 0,
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.color = '#C9A96E'; e.currentTarget.style.borderColor = '#C9A96E' }}
-                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.borderColor = 'rgba(160,120,32,0.35)' }}
-                      >
-                        {tr('page.seeAll')}
-                      </button>
-                    </div>
-                  )}
-                  <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />
-                </div>
-                {/* Scrollable content */}
-                <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-                  <Hero />
-                  <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} topContent={<StatsRow data={data} />} noMap onHoveredChange={setHoveredId} />
-                  <footer style={{
-                    borderTop:'1px solid var(--border-c)',
-                    background:'var(--bg)',
-                    padding:'1.5rem 2rem',
-                    display:'flex', alignItems:'center', justifyContent:'space-between',
-                    transition:'background 0.25s, border-color 0.25s',
+              {/* Left column: scrolls internally, FilterBar sticks when Hero scrolls past */}
+              <div style={{ width: '45%', minWidth: 0, height: '100%', overflowY: 'auto' }}>
+                <Hero />
+                {collectionMode && (
+                  <div style={{
+                    background: 'linear-gradient(90deg, rgba(160,120,32,0.18) 0%, rgba(160,120,32,0.08) 100%)',
+                    borderBottom: '1px solid rgba(160,120,32,0.35)',
+                    padding: '0.6rem 2rem',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                    backdropFilter: 'blur(12px)',
                   }}>
-                    <span style={{ fontFamily:'var(--font-serif)', fontSize:'1.25rem', color:'var(--gold)', fontWeight:400 }}>
-                      ArmNair
-                    </span>
-                    <span style={{ fontFamily:'var(--font-mono)', fontSize:'0.58rem', color:'var(--tm)', letterSpacing:'0.08em' }}>
-                      {tr('page.footer')}
-                    </span>
-                  </footer>
-                </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ color: '#C9A96E', fontSize: '0.9rem' }}>✦</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#C9A96E', letterSpacing: '0.1em' }}>
+                        {tr('page.collection')} · {collectionIds.length} {
+                          lang === 'ru'
+                            ? (collectionIds.length === 1 ? tr('page.item') : collectionIds.length < 5 ? tr('page.items2') : tr('page.items5'))
+                            : tr('page.item')
+                        }
+                      </span>
+                    </div>
+                    <button
+                      onClick={exitCollectionMode}
+                      style={{
+                        background: 'none', border: '1px solid rgba(160,120,32,0.35)',
+                        color: 'var(--t3)', cursor: 'pointer',
+                        fontFamily: 'var(--font-mono)', fontSize: '0.58rem', letterSpacing: '0.08em',
+                        padding: '3px 10px', borderRadius: 2,
+                        transition: 'all 0.2s', flexShrink: 0,
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#C9A96E'; e.currentTarget.style.borderColor = '#C9A96E' }}
+                      onMouseLeave={e => { e.currentTarget.style.color = 'var(--t3)'; e.currentTarget.style.borderColor = 'rgba(160,120,32,0.35)' }}
+                    >
+                      {tr('page.seeAll')}
+                    </button>
+                  </div>
+                )}
+                <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />
+                <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} topContent={<StatsRow data={data} />} noMap onHoveredChange={setHoveredId} />
+                <footer style={{
+                  borderTop:'1px solid var(--border-c)',
+                  background:'var(--bg)',
+                  padding:'1.5rem 2rem',
+                  display:'flex', alignItems:'center', justifyContent:'space-between',
+                  transition:'background 0.25s, border-color 0.25s',
+                }}>
+                  <span style={{ fontFamily:'var(--font-serif)', fontSize:'1.25rem', color:'var(--gold)', fontWeight:400 }}>
+                    ArmNair
+                  </span>
+                  <span style={{ fontFamily:'var(--font-mono)', fontSize:'0.58rem', color:'var(--tm)', letterSpacing:'0.08em' }}>
+                    {tr('page.footer')}
+                  </span>
+                </footer>
               </div>
               {/* Right column: map fills remaining width, full height */}
               <div id="right-panel" style={{
