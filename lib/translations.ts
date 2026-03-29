@@ -149,7 +149,7 @@ const T: Dict = {
   // ── Hero ──────────────────────────────────────────────────────────────
   'hero.badge':      { en: 'Yerevan · Armenia · 2026',     ru: 'Ереван · Армения · 2026',      am: 'ԵՐԵՎԱՆ · ՀԱՅԱՍՏԱՆ · 2026' },
   'hero.subtitle':   { en: 'Yerevan residential complex aggregator. Up-to-date data on the Armenian real estate market — prices, yields, tax refunds.', ru: 'Агрегатор жилых комплексов Еревана. Актуальные данные о рынке недвижимости Армении — цены, доходность, налоговый возврат.', am: 'Երևանի բնակելի համալիրների ագրեգատոր։ Հայաստանի անշարժ գույքի շուկայի վերաբերյալ վերջին տվյալները, ներառյալ գները, եկամտաբերությունը և հարկերի վերադարձը։' },
-  'hero.quote':      { en: '— “Look”. We help you see the real estate market clearly.', ru: '— «Смотри». Мы помогаем видеть рынок недвижимости насквозь.', am: '— «Նայիր»։ Մենք օգնում ենք տեսնել անշառժ գույքի շուկանի ներսից։' },
+  'hero.quote':      { en: '— “Look”. We help you see the real estate market clearly.', ru: '— «Смотри». Мы помогаем видеть рынок недвижимости насквозь.', am: '— «Նայիր»։ Մենք օգնում ենք տեսնել անշառժ գույքի շուկայի ներսից։' },
 
   // ── MobileTabBar ──────────────────────────────────────────────────────
   'tab.home':        { en: 'HOME',      ru: 'ГЛАВНАЯ',   am: 'HOME' },
@@ -173,7 +173,7 @@ const T: Dict = {
 
   // ── StatsRow ──────────────────────────────────────────────────────────
   'stats.projects':  { en: 'projects',    ru: 'проектов',    am: 'projects' },
-  'stats.locations': { en: 'locations',   ru: 'локаций',     am: 'locations' },
+  'stats.locations': { en: 'locations',   ru: 'локаций',     am: 'վայրերը' },
   'stats.fromPerSqm':{ en: 'from/m²',    ru: 'от/м²',       am: 'from/m²' },
   'stats.taxRefund': { en: 'with refund', ru: 'с возвратом', am: 'with refund' },
 
