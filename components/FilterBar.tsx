@@ -73,7 +73,7 @@ function Dropdown({ placeholder, options, onChange, isMobile }: {
         <div style={{
           position: 'absolute', top: 'calc(100% + 5px)', left: 0,
           background: 'var(--card)', border: '1px solid var(--border-c)',
-          borderRadius: 10, minWidth: '100%', zIndex: 200,
+          borderRadius: 10, minWidth: '100%', zIndex: 1000,
           boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
           overflow: 'hidden',
         }}>
@@ -169,7 +169,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data,
 
   return (
     <div style={{
-      position: 'sticky' as const, top: stickyTop, zIndex: 40,
+      position: 'sticky' as const, top: stickyTop, zIndex: 1000,
       background:'var(--filter-bg)',
       backdropFilter:'blur(24px)', WebkitBackdropFilter:'blur(24px)',
       borderBottom:'1px solid var(--border-c)',

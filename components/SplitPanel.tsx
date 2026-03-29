@@ -65,7 +65,7 @@ export default function SplitPanel({ id, complexes, isLoading = false, openMobil
   // On mobile: map fixed-height block, no scroll
   if (isMobile) {
     return (
-      <div id={id} style={{ height: '40vh', position: 'relative', flexShrink: 0, overflow: 'hidden' }}>
+      <div id={id} style={{ height: '40vh', position: 'relative', flexShrink: 0, overflow: 'hidden', zIndex: 1 }}>
         <MapPanel
           complexes={complexes}
           onMarkerClick={onCardClick}
