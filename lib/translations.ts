@@ -232,7 +232,7 @@ const T: Dict = {
   'consult.subtitle': { en: 'ArmNair · Yerevan · Armenia',                 ru: 'ArmNair · Ереван · Армения',                    am: 'ArmNair · Yerevan · Armenia' },
   'consult.phone':    { en: 'Phone',                                       ru: 'Телефон',                                       am: 'Phone' },
   'consult.footer':   { en: "We'll respond within 15 min · Mon–Sun 9:00–21:00", ru: 'Ответим в течение 15 минут · Пн–Вс 9:00–21:00', am: "We'll respond within 15 min · Mon–Sun 9:00–21:00" },
-  'contact.phone':    { en: 'Phone',                                       ru: 'Телефон',                                       am: 'Հեռախոս' },
+  'contact.phone':    { en: 'Phone',                                       ru: 'Телефон',                                       am: 'Հեռախոսահամար' },
 
   // ── Toast notifications ───────────────────────────────────────────────
   'toast.linkCopied':            { en: 'Link copied',           ru: 'Ссылка скопирована',      am: 'Հղումը պատճենված է' },
