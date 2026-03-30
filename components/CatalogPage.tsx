@@ -1,12 +1,11 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { Complex } from '@/lib/types'
 import { fmtAmd, statusStyle, freshLabel, priceGrowth, parseYield } from '@/lib/utils'
 import FilterBar from './FilterBar'
 import ScrollToTopButton from './ScrollToTopButton'
 import PropertyCard from './PropertyCard'
 import PropertyCardSkeleton from './PropertyCardSkeleton'
-import { ArrowUpDown } from 'lucide-react'
 import { useT } from '@/lib/StaticTranslationProvider'
 import { statusKey } from '@/lib/translations'
 import { useToast } from '@/lib/ToastContext'
@@ -40,6 +39,17 @@ export default function CatalogPage({ data, isLoading = false, onOpenModal, onBa
   const { showToast } = useToast()
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [sort, setSort] = useState<SortKey>('default')
+  const [sortOpen, setSortOpen] = useState(false)
+  const sortRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!sortOpen) return
+    const handler = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setSortOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [sortOpen])
 
   const filtered = useMemo(() => {
     let result = data.filter(c => {
@@ -113,17 +123,72 @@ export default function CatalogPage({ data, isLoading = false, onOpenModal, onBa
               {tr('favorites.clearAll')}
             </button>
           )}
-          <ArrowUpDown size={12} color="var(--t3)" />
-          <select
-            className="pill-sel"
-            value={sort}
-            onChange={e => setSort(e.target.value as SortKey)}
-          >
-            <option value="default">{tr('catalog.sortDefault')}</option>
-            <option value="price_asc">{tr('catalog.sortPriceAsc')}</option>
-            <option value="price_desc">{tr('catalog.sortPriceDesc')}</option>
-            <option value="yield_desc">{tr('catalog.sortYield')}</option>
-          </select>
+          <div ref={sortRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setSortOpen(v => !v)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                background: sort !== 'default' ? 'rgba(184,148,42,0.1)' : 'var(--input-bg)',
+                border: `1px solid ${sort !== 'default' ? 'rgba(184,148,42,0.4)' : 'var(--border-c)'}`,
+                borderRadius: 20,
+                padding: '0.3rem 0.75rem',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.72rem',
+                color: sort !== 'default' ? 'var(--gold)' : 'var(--t2)',
+                cursor: 'pointer',
+                letterSpacing: '0.04em',
+                whiteSpace: 'nowrap',
+                transition: 'border-color 0.2s, background 0.2s',
+              }}
+            >
+              <span>{[
+                { value: 'default',    label: tr('catalog.sortDefault') },
+                { value: 'price_asc',  label: tr('catalog.sortPriceAsc') },
+                { value: 'price_desc', label: tr('catalog.sortPriceDesc') },
+                { value: 'yield_desc', label: tr('catalog.sortYield') },
+              ].find(o => o.value === sort)?.label}</span>
+              <svg width="9" height="6" viewBox="0 0 10 6"
+                style={{ transform: sortOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s', flexShrink: 0 }}
+              >
+                <path d="M5 6L0 0h10z" fill="#b8942a" />
+              </svg>
+            </button>
+            {sortOpen && (
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 5px)', right: 0,
+                background: 'var(--card)', border: '1px solid var(--border-c)',
+                borderRadius: 10, minWidth: '100%', zIndex: 1000,
+                boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
+                overflow: 'hidden',
+              }}>
+                {([
+                  { value: 'default',    label: tr('catalog.sortDefault') },
+                  { value: 'price_asc',  label: tr('catalog.sortPriceAsc') },
+                  { value: 'price_desc', label: tr('catalog.sortPriceDesc') },
+                  { value: 'yield_desc', label: tr('catalog.sortYield') },
+                ] as { value: SortKey; label: string }[]).map(opt => (
+                  <div
+                    key={opt.value}
+                    onClick={() => { setSort(opt.value); setSortOpen(false) }}
+                    style={{
+                      padding: '0.42rem 0.9rem',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.7rem',
+                      color: sort === opt.value ? 'var(--gold)' : 'var(--t2)',
+                      background: sort === opt.value ? 'rgba(184,148,42,0.08)' : 'transparent',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(184,148,42,0.12)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = sort === opt.value ? 'rgba(184,148,42,0.08)' : 'transparent')}
+                  >
+                    {opt.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
