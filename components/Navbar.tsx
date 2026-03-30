@@ -47,7 +47,7 @@ export default function Navbar({ activePage, onNav, favCount = 0, favOnly = fals
 
   return (
     <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1100,
       backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
       background: 'var(--nav-bg)',
       borderBottom: '1px solid var(--border-c)',
