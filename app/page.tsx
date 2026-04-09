@@ -14,7 +14,6 @@ import { useTheme } from '@/components/ThemeProvider'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
 import FilterBar from '@/components/FilterBar'
-import StatsRow from '@/components/StatsRow'
 import SplitPanel from '@/components/SplitPanel'
 import PropertyModal from '@/components/PropertyModal'
 import ConsultModal from '@/components/ConsultModal'
@@ -224,7 +223,7 @@ export default function Home() {
               </div>
             )}
             <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} />
-            <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} topContent={<StatsRow data={data} />} noMap />
+            <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} noMap />
             <footer style={{
               borderTop:'1px solid var(--border-c)',
               background:'var(--bg)',
@@ -281,7 +280,7 @@ export default function Home() {
                   </div>
                 )}
                 <FilterBar filters={filters} onFiltersChange={setFilters} resultCount={filtered.length} data={data} stickyTop={0} />
-                <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} topContent={<StatsRow data={data} />} noMap onHoveredChange={setHoveredId} />
+                <SplitPanel id="split-panel" complexes={filtered} isLoading={isLoading} openMobileMap={mobileMapTrigger} onCardClick={setSelectedId} mapFocusId={mapFocusId} onMapFocusDone={() => setMapFocusId(null)} favorites={favorites} onToggleFavorite={toggleFav} favOnly={favOnly} onClearFavOnly={() => setFavOnly(false)} compareIds={compareIds} onToggleCompare={toggleCompare} onShareFavorites={handleShareFavorites} onClearFavorites={() => { clearFav(); setFavOnly(false) }} noMap onHoveredChange={setHoveredId} />
                 <footer style={{
                   borderTop:'1px solid var(--border-c)',
                   background:'var(--bg)',
