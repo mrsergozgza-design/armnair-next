@@ -80,6 +80,7 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
   const [heartAnim, setHeartAnim] = useState(false)
   const [heroIdx, setHeroIdx] = useState(0)
   const [developerExpanded, setDeveloperExpanded] = useState(false)
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false)
 
   // Drag-to-close (mobile)
   const [dragY, setDragY] = useState(0)
@@ -527,7 +528,33 @@ export default function PropertyModal({ complex: c, onClose, onOpenContact, onOp
             {/* Left column */}
             <div style={{ padding: isMobile ? '1rem' : '1.5rem', borderRight: isMobile ? 'none' : '1px solid rgba(139,105,20,0.1)' }}>
               <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--tm)', letterSpacing: '0.12em', marginBottom: 8, textTransform: 'uppercase' }}>{tr('modal.description')}</h4>
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: 'var(--t2)', lineHeight: 1.7, marginBottom: '1.5rem' }}>{translated.description || c.description}</p>
+              {(() => {
+                const descText = translated.description || c.description || ''
+                const LINE_HEIGHT = 1.7
+                const FONT_SIZE = 0.9
+                const LINES = 4
+                const maxH = `${LINE_HEIGHT * FONT_SIZE * LINES}rem`
+                return (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <p style={{
+                      fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: 'var(--t2)', lineHeight: LINE_HEIGHT, margin: 0,
+                      overflow: 'hidden',
+                      maxHeight: descriptionExpanded ? 'none' : maxH,
+                    }}>
+                      {descText}
+                    </p>
+                    {descText.length > 0 && (
+                      <button
+                        onClick={() => setDescriptionExpanded(v => !v)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#A07820', letterSpacing: '0.08em', marginTop: 7, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+                      >
+                        {descriptionExpanded ? tr('modal.collapse') : tr('modal.readMore')}
+                        {descriptionExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                      </button>
+                    )}
+                  </div>
+                )
+              })()}
 
               <div style={{ marginBottom: '1.5rem' }}>
                 {[
