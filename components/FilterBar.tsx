@@ -111,7 +111,7 @@ export default function FilterBar({ filters, onFiltersChange, resultCount, data,
   const tr = useT()
   const tStatus = useTStatus()
   const tDistrict = useTDistrict()
-  const districts  = Array.from(new Set(data.map(c => c.district))).sort()
+  const districts  = Array.from(new Set(data.map(c => c.district).filter(Boolean))).sort()
   const developers = Array.from(new Set(data.map(c => c.developer))).sort()
   // Deduplicate statuses by normalized key (e.g. "Underconstruction" and "Under Construction" → same entry)
   const statuses = Array.from(

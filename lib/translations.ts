@@ -209,6 +209,9 @@ const T: Dict = {
   'district.NorkMarash':       { en: 'Nork-Marash',        ru: 'Норк-Мараш',       am: 'Nork-Marash' },
   'district.Ajapnyak':         { en: 'Ajapnyak',           ru: 'Аджапняк',         am: 'Ajapnyak' },
   'district.Nubarashen':       { en: 'Nubarashen',         ru: 'Нубарашен',        am: 'Nubarashen' },
+  'district.Kanakeravan':      { en: 'Kanakeravan',        ru: 'Канакеркаван',     am: 'Կանաքեռավան' },
+  'district.Sevan':            { en: 'Sevan',              ru: 'Севан',            am: 'Սևան' },
+  'district.Tsakhkadzor':      { en: 'Tsakhkadzor',        ru: 'Цахкадзор',        am: 'Ծաղկաձոր' },
 
   // ── Units table ───────────────────────────────────────────────────────
   'units.title':        { en: 'Available Units',  ru: 'Доступные юниты',   am: 'Available Units' },
